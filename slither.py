@@ -1,10 +1,10 @@
 import wx
 import wx.stc
+import wx.py
 import keyword
 import pygame
 import os
 
-import os
 import sys
 
 
@@ -273,15 +273,28 @@ class RootWindow(wx.Frame):
         self.editor = TextEditor(self.tab, wx.ID_ANY)
         self.tab.AddPage(self.editor, "Codice")
         self.tab.AddPage(wx.StaticText(self.tab, -1, "ciccio"), "Costumi")
-        self.editor2 = TextEditor(self, wx.ID_ANY)
+        self.sprites = wx.ListCtrl(self)
+        self.sprites.InsertImageItem(0,0)
+        self.sprites.InsertImageItem(1,0)
+        self.sprites.InsertImageItem(2,0)
+        self.shell = wx.py.crust.Crust(parent=self)
+        self.shell.Show()
+        self.basket_classes = wx.ListCtrl(self, wx.ID_ANY, size = (200,300), style=wx.LC_REPORT)
+        self.basket_classes.InsertColumn(0,"Classes")
+        self.basket_classes.InsertStringItem(0, "Movement")
+        self.basket_classes.InsertStringItem(1, "Stage")
+        self.basket_functions = wx.ListCtrl(self, wx.ID_ANY, size = (200,300))
         sizer = wx.GridBagSizer()
         self.stage = wxSDLWindow(self, wx.ID_ANY, size = (300,300))
         self.box = wx.StaticBox(self, wx.ID_ANY, size = (300,300))
         sizer.Add(self.box, (0,0))
-        sizer.Add(self.tab, (0,1), span=(2,1), flag=wx.EXPAND)
-        sizer.Add(self.editor2, (1,0), flag=wx.EXPAND)
+        sizer.Add(self.basket_classes, (0,1), span=(1,1))
+        sizer.Add(self.basket_functions, (1,1), span=(1,1), flag=wx.EXPAND)
+        sizer.Add(self.tab, (0,2), span=(2,1), flag=wx.EXPAND)
+        sizer.Add(self.sprites, (1,0), flag=wx.EXPAND)
+        sizer.Add(self.shell, (2,0), span=(1,3),  flag=wx.EXPAND)
         sizer.Fit(self)
-        sizer.AddGrowableCol(1)
+        sizer.AddGrowableCol(2)
         sizer.AddGrowableRow(1)
         self.SetSizer(sizer)
         self.Layout()
