@@ -17,7 +17,6 @@ class Stage(wx.StaticBox):
         self._resized = 0
         self._surface = None
         self.__needsDrawing = 1
-        #hwnd = self.parent.GetHandle()
         self.size = self.GetSizeTuple()
 
         wx.EVT_SIZE(self, self.OnSize)
@@ -26,7 +25,7 @@ class Stage(wx.StaticBox):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_TIMER, self.Update, self.timer)
 
-        self.max_fps = 60.0
+        self.max_fps = 25.0
         self.timespacing = 1000.0 / self.max_fps
         self.timer.Start(self.timespacing, False)
         self.default_backcolor = (255, 255, 255)
@@ -37,7 +36,6 @@ class Stage(wx.StaticBox):
             if not self._initialized:
                 # get the handle
                 hwnd = self.GetHandle()
-
                 os.environ['SDL_WINDOWID'] = str(hwnd)
                 if sys.platform == 'win32':
                     os.environ['SDL_VIDEODRIVER'] = 'windib'
@@ -53,13 +51,6 @@ class Stage(wx.StaticBox):
                 self._initialized = 1
         else:
             self._resized = 0
-
-        x,y = self.GetSizeTuple()
-        self._surface = pygame.display.set_mode((x,y))
-
-        self._surface.fill((0,0,0))
-        if self.__needsDrawing:
-            self.draw()
 
     def OnPaint(self, ev):
         self.Redraw()
@@ -78,22 +69,18 @@ class Stage(wx.StaticBox):
     def set_background(self):
         filename = os.path.normpath("assets/images/stars.jpg")
         image = pygame.image.load(filename)
-        background_image = image.subsurface((0,0), (self.size[0], self.size[1])).copy()
-        background_image.convert()
-        background_image.set_alpha(127)
+        self.background_image = image.subsurface((0,0), (self.size[0], self.size[1])).copy()
+        self.background_image.convert()
+        self.background_image.set_alpha(127)
 
-    def draw(self):
-        pygame.draw.circle(self._surface, (250,0,0), (100,100), 50)
-        pygame.display.flip()
-        #raise NotImplementedError('please define a .draw() method!')
-
-    def Update(self):
+    def Update(self, event):
         #loop = main_event_queue.handle_events()
         #background_change, background, screen_elements = game_controller.update()
         self.Redraw()
 
     def Redraw(self):
         self.screen.fill((0,0,0))
+        pygame.draw.circle(self.screen, (250,0,0), (100,100), 50)
         #screen.fill(default_backcolor)
         #screen.blit(background_image, (0,0))
         #screen_elements.draw(screen)

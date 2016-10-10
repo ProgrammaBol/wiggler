@@ -1,8 +1,15 @@
+import imp
+import py_compile
+import sys
+import traceback
 import wx
 import wx.py
 
+
+
 from editor import TextEditor
 from stage import Stage
+import pyflakes.checker as pyflakes
 
 class RootWindow(wx.Frame):
 
@@ -28,7 +35,20 @@ class RootWindow(wx.Frame):
         self.sprites.InsertImageItem(0,0)
         self.sprites.InsertImageItem(1,0)
         self.sprites.InsertImageItem(2,0)
-        self.tools = wx.ToolBar(self, -1, size = (10, 40))
+        #self.tools = wx.ToolBar(self, -1, size = (10, 40))
+        self.tools = self.CreateToolBar()
+        play_image_bitmap =  wx.Bitmap('resources/images/play.png')
+        play_image = wx.ImageFromBitmap(play_image_bitmap)
+        play_image_scaled = play_image.Scale(30,30, wx.IMAGE_QUALITY_HIGH)
+        play_image = wx.BitmapFromImage(play_image_scaled)
+        playtool = self.tools.AddLabelTool(wx.ID_ANY, 'Play', play_image)
+        self.Bind(wx.EVT_TOOL, self.play, playtool)
+        stop_image_bitmap =  wx.Bitmap('resources/images/stop.png')
+        stop_image = wx.ImageFromBitmap(stop_image_bitmap)
+        stop_image_scaled = stop_image.Scale(30,30, wx.IMAGE_QUALITY_HIGH)
+        stop_image = wx.BitmapFromImage(stop_image_scaled)
+        stoptool = self.tools.AddLabelTool(wx.ID_ANY, 'stop', stop_image)
+        self.tools.Realize()
         self.shell = wx.py.crust.Crust(parent=self)
         self.shell.Show()
         self.basket_classes = wx.ListCtrl(self, wx.ID_ANY, size = (200,300), style=wx.LC_REPORT)
@@ -39,18 +59,33 @@ class RootWindow(wx.Frame):
         sizer = wx.GridBagSizer()
         self.stage = Stage(self, wx.ID_ANY, size = (300,300))
         self.box = wx.StaticBox(self, wx.ID_ANY, size = (300,300))
-        sizer.Add(self.tools, (0,1), span=(1,3),flag=wx.EXPAND)
-        sizer.Add(self.stage, (1,0))
-        sizer.Add(self.basket_classes, (1,1), span=(1,1))
-        sizer.Add(self.basket_functions, (2,1), span=(1,1), flag=wx.EXPAND)
-        sizer.Add(self.tab, (1,2), span=(2,1), flag=wx.EXPAND)
-        sizer.Add(self.sprites, (2,0), flag=wx.EXPAND)
-        sizer.Add(self.shell, (3,0), span=(1,3),  flag=wx.EXPAND)
+        sizer.Add(self.stage, (0,0))
+        sizer.Add(self.basket_classes, (0,1), span=(1,1))
+        sizer.Add(self.basket_functions, (1,1), span=(1,1), flag=wx.EXPAND)
+        sizer.Add(self.tab, (0,2), span=(2,1), flag=wx.EXPAND)
+        sizer.Add(self.sprites, (1,0), flag=wx.EXPAND)
+        sizer.Add(self.shell, (2,0), span=(1,3),  flag=wx.EXPAND)
         sizer.Fit(self)
         sizer.AddGrowableCol(2)
         sizer.AddGrowableRow(2)
         self.SetSizer(sizer)
         self.Layout()
+
+    def play(self, event):
+        code = self.editor.GetText()
+        try:
+            tree = compile(code, "test.py", "exec")
+            with open('/tmp/element.py',"w+") as element_file:
+                element_file.write(code)
+            element = imp.load_source('element', '/tmp/element.py')
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print exc_value.lineno
+        finally:
+            try:
+                del exc_traceback
+            except:
+                pass
 
     def exit(self, event):
         self.Close(True)

@@ -11,17 +11,22 @@ class StageContext(object):
     def __init__(self, context):
         for k,v in context.iteritems():
             setattr(self, k, v)
-        self.load_sounds(self.sounds_dir)
-        self.load_sheets(self.graphics_dir)
-        self.load_graphics(self.graphics_file)
-        self.load_music(self.music_dir)
-        self.load_fonts(self.font_dir)
-        self.load_animations(self.animations_file)
+        #self.scan_sheets(self.graphics_dir)
+        self.load_sounds()
+        self.load_graphics()
+        #self.load_music(self.music_dir)
+        #self.load_fonts(self.font_dir)
+        #self.load_animations(self.animations_file)
 
     def add(self, key, value):
         setattr(self, key, value)
 
-    def load_sheets(self, dir):
+    def load_graphics(self):
+        self.spriteslib = SpritesLib(self)
+        self.spriteslib.add_sheet("main", os.path.normpath("resources/spritesheets/master.png"), (0, 0, 0))
+        self.add("sprites", self.spriteslib)
+
+    def scan_sheets(self, dir):
         self.spriteslib = SpritesLib(self)
         for name, handle, meta in loader(dir):
             try:
@@ -33,10 +38,6 @@ class StageContext(object):
 
     def load_sounds(self):
         self.soundslib = SoundsLib()
-        self.soundslib.add_sound("alloyshipthrust", os.path.normpath("assets/sounds/alloyshipthrust.wav"))
-        self.soundslib.add_sound("gunshot", os.path.normpath("assets/sounds/gunshot.wav"))
-        self.soundslib.add_sound("gunblast", os.path.normpath("assets/sounds/gunblast.wav"))
-        self.soundslib.add_sound("explosion", os.path.normpath("assets/sounds/explosion.wav"))
         self.add("sounds", self.soundslib)
 
     def load_music(self):
