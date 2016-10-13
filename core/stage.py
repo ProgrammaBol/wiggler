@@ -1,7 +1,10 @@
+import imp
 import os
 import pygame
 import sys
 import wx
+
+import pprint
 
 from engine.datastructures import EventQueue, StageContext
 from engine.stagecontroller import StageController
@@ -19,6 +22,7 @@ class Stage(wx.StaticBox):
         self.__needsDrawing = 1
         self.size = self.GetSizeTuple()
 
+        self.screen = None
         wx.EVT_SIZE(self, self.OnSize)
         wx.EVT_IDLE(self, self.OnIdle)
         self.timer = wx.Timer(self)
@@ -31,6 +35,7 @@ class Stage(wx.StaticBox):
         self.default_backcolor = (255, 255, 255)
 
 
+
     def OnIdle(self, ev):
         if not self._initialized or self._resized:
             if not self._initialized:
@@ -41,8 +46,9 @@ class Stage(wx.StaticBox):
                     os.environ['SDL_VIDEODRIVER'] = 'windib'
                 pygame.init()
                 self.screen = pygame.display.set_mode(self.size)
+                self.clock = pygame.time.Clock()
                 main_event_queue = EventQueue()
-                context_data = { "clock": self.timer,
+                context_data = { "clock": self.clock,
                                 "resolution": self.size,
                                 "screen": self.screen,
                                 }
@@ -75,14 +81,29 @@ class Stage(wx.StaticBox):
 
     def Update(self, event):
         #loop = main_event_queue.handle_events()
-        #background_change, background, screen_elements = game_controller.update()
         self.Redraw()
 
+    def clear(self):
+        self.stage_controller.elements.empty()
+
+    def add_elements(self, name):
+        res = imp.load_source('element', '/tmp/element.py')
+        import element
+        cl = name.upper()
+        exec ('el = self.stage_context.spriteslib.get_sprite(element.%s, self.stage_context)' % cl)
+        print el
+        self.stage_controller.elements.add(el)
+
     def Redraw(self):
+        if not self.screen:
+            return
+        self.clock.tick()
         self.screen.fill((0,0,0))
-        pygame.draw.circle(self.screen, (250,0,0), (100,100), 50)
+        #pygame.draw.circle(self.screen, (250,0,0), (100,100), 50)
         #screen.fill(default_backcolor)
         #screen.blit(background_image, (0,0))
+        background_change, background, screen_elements = self.stage_controller.update()
         #screen_elements.draw(screen)
+        self.stage_controller.elements.draw(self.screen)
         pygame.display.flip()
         #clock.tick(max_fps)

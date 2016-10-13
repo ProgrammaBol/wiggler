@@ -151,33 +151,6 @@ class StageController(object):
     def update(self):
         if self.pause:
             return False, None, self.elements
-        self.elements.empty()
-        # Statuses
-        if self.status == "game-over":
-            self.gameover()
-        if self.status == "menu-init":
-            self.menu_init()
-            self.status = "menu"
-        if self.status == "menu":
-            self.menu_update()
-        if self.status == "level-init":
-            levelid = self.worldmap.get_current_room_id()
-            if levelid is None:
-                next_levelid = (0,0)
-            else:
-                next_levelid = (0, levelid[1] + 1)
-            self.level_init(next_levelid)
-            self.status = "intralevel-init"
-        if self.status == "intralevel-init":
-            room = self.worldmap.get_current_room()
-            self.intralevel_init(room)
-        if self.status == "intralevel":
-            room = self.worldmap.get_current_room()
-            self.intralevel_update(room)
-        if self.status == "level":
-            room = self.worldmap.get_current_room()
-            self.level_update(room)
-
         for sprite in self.elements.sprites():
             if getattr(sprite, "destroyed", False):
                 sprite.kill()

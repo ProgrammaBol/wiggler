@@ -1,5 +1,7 @@
 import imp
+import jinja2
 import py_compile
+import re
 import sys
 import traceback
 import wx
@@ -30,7 +32,7 @@ class RootWindow(wx.Frame):
         self.tab = wx.Notebook(self, -1)
         self.editor = TextEditor(self.tab, wx.ID_ANY)
         self.tab.AddPage(self.editor, "Codice")
-        self.tab.AddPage(wx.StaticText(self.tab, -1, "ciccio"), "Costumi")
+        self.tab.AddPage(wx.StaticText(self.tab, -1, "Costumes"), "Costumes")
         self.sprites = wx.ListCtrl(self)
         self.sprites.InsertImageItem(0,0)
         self.sprites.InsertImageItem(1,0)
@@ -72,20 +74,26 @@ class RootWindow(wx.Frame):
         self.Layout()
 
     def play(self, event):
-        code = self.editor.GetText()
-        try:
-            tree = compile(code, "test.py", "exec")
-            with open('/tmp/element.py',"w+") as element_file:
-                element_file.write(code)
-            element = imp.load_source('element', '/tmp/element.py')
-        except:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            print exc_value.lineno
-        finally:
-            try:
-                del exc_traceback
-            except:
-                pass
+        raw_code = self.editor.GetText()
+        indented_code = '\n'.join(map(lambda s: re.sub("^"," "*8,s), raw_code.splitlines()))
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader("core/templates"))
+        template = env.get_template("element.j2")
+        element_code = template.render(class_name="example", indented_code=indented_code)
+        print element_code
+        #try:
+        tree = compile(element_code, "test.py", "exec")
+        with open('/tmp/element.py',"w+") as element_file:
+            element_file.write(element_code)
+        #except:
+        #    exc_type, exc_value, exc_traceback = sys.exc_info()
+        #    print exc_value.lineno
+        #finally:
+        #    try:
+        #        del exc_traceback
+        #    except:
+        #        pass
+        self.stage.clear()
+        self.stage.add_elements('example')
 
     def exit(self, event):
         self.Close(True)
