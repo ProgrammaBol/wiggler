@@ -1,0 +1,13 @@
+from engine.sprites import MovingSprite
+
+class {{ class_name|upper() }}(MovingSprite):
+
+    def __init__(self, stage_context, parent=None, initdata={}, random_ranges={}, *group):
+        self.costumes = dict()
+        self.costumes_defs = dict()
+        self.costumes_defs['default'] = ("main", (481,403, 29,29))
+        super({{ class_name|upper() }}, self).__init__(stage_context, initdata=initdata, random_ranges=random_ranges, *group)
+{{ indented_code }}
+
+#    def update(self):
+#        super({{ class_name }}, self).update(self)
