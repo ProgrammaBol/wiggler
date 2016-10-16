@@ -1,4 +1,3 @@
-import imp
 import os
 import pygame
 import sys
@@ -92,7 +91,7 @@ class Stage(wx.StaticBox):
         if not self.screen:
             return
         self.clock.tick()
-        self.screen.fill((0,0,0))
+        self.screen.fill((255,255,255))
         #pygame.draw.circle(self.screen, (250,0,0), (100,100), 50)
         #screen.fill(default_backcolor)
         #screen.blit(background_image, (0,0))

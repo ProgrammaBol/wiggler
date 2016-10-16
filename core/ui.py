@@ -3,6 +3,7 @@ import wx.py
 
 from editor import TextEditor
 from spriteelements import SpriteElement
+from engine.sprites import MovingSprite
 from stage import Stage
 
 class RootWindow(wx.Frame):
@@ -14,7 +15,7 @@ class RootWindow(wx.Frame):
         self.current_element = None
         self.SetMinSize((100,100))
 
-        self.stage = Stage(self, wx.ID_ANY, size = (300,300))
+        self.stage = Stage(self, wx.ID_ANY, size = (400,400))
         self.setup_menu()
         self.setup_toolbar()
 
@@ -23,6 +24,10 @@ class RootWindow(wx.Frame):
         self.setup_shell()
         self.setup_basket_classes()
         self.setup_basket_members()
+
+        self.statusbar = self.CreateStatusBar(2)
+        #self.statusbar.SetStatusWidths([1,-1])
+        self.statusbar.SetStatusText("Self-Sufficiency Level: 0")
 
         self.widget_placement()
         self.Layout()
@@ -42,13 +47,14 @@ class RootWindow(wx.Frame):
 
 
     def setup_basket_members(self):
-        self.basket_functions = wx.ListCtrl(self, wx.ID_ANY, size = (200,300))
+        self.basket_functions = wx.ListCtrl(self, wx.ID_ANY, size = (200,300), style=wx.LC_REPORT)
+        self.basket_functions.InsertColumn(0,"Available attributes")
 
     def setup_basket_classes(self):
-        self.basket_classes = wx.ListCtrl(self, wx.ID_ANY, size = (200,300), style=wx.LC_REPORT)
-        self.basket_classes.InsertColumn(0,"Classes")
-        self.basket_classes.InsertStringItem(0, "Movement")
-        self.basket_classes.InsertStringItem(1, "Stage")
+        self.basket_classes = wx.ListCtrl(self, wx.ID_ANY, size = (200,400), style=wx.LC_REPORT)
+        self.basket_classes.InsertColumn(0,"Available Classes")
+        self.basket_classes.InsertStringItem(0, "MovingSprite")
+        self.basket_classes.InsertStringItem(1, "StaticSprite")
 
     def setup_shell(self):
         self.shell = wx.py.crust.Crust(parent=self)
@@ -58,7 +64,7 @@ class RootWindow(wx.Frame):
         self.sprites = wx.ListCtrl(self, style = wx.LC_ICON)
         self.sprites.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSpriteSelected)
         self.il = wx.ImageList(30,30, True)
-        img_list=self.sprites.AssignImageList(self.il, wx.IMAGE_LIST_NORMAL)
+        self.sprites.AssignImageList(self.il, wx.IMAGE_LIST_NORMAL)
 
         # Fixtures
         spritesheet_bitmap =  wx.Bitmap('resources/spritesheets/master.png')
@@ -67,10 +73,9 @@ class RootWindow(wx.Frame):
         image = spritesheet_image.GetSubImage(subsize)
         image_scaled = image.Scale(30,30, wx.IMAGE_QUALITY_HIGH)
         sprite_bitmap = wx.BitmapFromImage(image_scaled)
-        t = self.il.Add(sprite_bitmap)
+        self.il.Add(sprite_bitmap)
         index = self.sprites.InsertImageItem(0,0)
         self.elements[index] = SpriteElement('example')
-        print t
 
     def onSpriteSelected(self, event):
         try:
@@ -79,6 +84,9 @@ class RootWindow(wx.Frame):
             pass
         self.current_element = self.elements[event.m_itemIndex]
         self.editor.set_buffer(self.current_element.raw_code)
+        self.basket_functions.DeleteAllItems()
+        for index, attrib in enumerate(dir(MovingSprite)):
+            self.basket_functions.InsertStringItem(index, attrib)
 
     def setup_object_area(self):
         self.tab = wx.Notebook(self, -1)
@@ -108,7 +116,12 @@ class RootWindow(wx.Frame):
         stop_image_scaled = stop_image.Scale(30,30, wx.IMAGE_QUALITY_HIGH)
         stop_image = wx.BitmapFromImage(stop_image_scaled)
         stoptool = self.tools.AddLabelTool(wx.ID_ANY, 'stop', stop_image)
+        self.Bind(wx.EVT_TOOL, self.stop, stoptool)
         self.tools.Realize()
+
+    def stop(self, event):
+        # just for demo purpose
+        self.statusbar.SetStatusText("Self-Sufficiency Level: 1")
 
     def play(self, event):
         self.current_element.raw_code = self.editor.GetText()
