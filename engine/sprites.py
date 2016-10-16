@@ -38,6 +38,7 @@ class SpritesLib(object):
                 costume_image = self.get_image(costume_sheet, costume_rect)
                 sprite.costumes[costume_name] = costume_image
         sprite.change_active_costume(sprite.active_costume_name)
+        sprite.update()
         return sprite
 
 class StaticSprite(pygame.sprite.Sprite):

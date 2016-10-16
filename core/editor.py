@@ -11,6 +11,11 @@ class TextEditor(wx.stc.StyledTextCtrl):
         self.SetEdgeColumn(78)
         self.Bind(wx.stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
         self.SetUpEditor()
+        self.SetReadOnly(1)
+
+    def set_buffer(self, raw_code):
+        self.SetText(raw_code)
+        self.SetReadOnly(0)
 
     def SetValue(self, value):
         #if wx.USE_UNICODE:

@@ -1,13 +1,13 @@
 from engine.sprites import MovingSprite
 
-class {{ class_name|upper() }}(MovingSprite):
+class Sprite(MovingSprite):
 
     def __init__(self, stage_context, parent=None, initdata={}, random_ranges={}, *group):
         self.costumes = dict()
         self.costumes_defs = dict()
         self.costumes_defs['default'] = ("main", (481,403, 29,29))
         self.custom_update = self.update_generator()
-        super({{ class_name|upper() }}, self).__init__(stage_context, initdata=initdata, random_ranges=random_ranges, *group)
+        super(Sprite, self).__init__(stage_context, initdata=initdata, random_ranges=random_ranges, *group)
 
     def update_generator(self):
 {{ indented_code }}
@@ -18,4 +18,4 @@ class {{ class_name|upper() }}(MovingSprite):
             next(self.custom_update)
         except StopIteration:
             pass
-        super({{ class_name|upper() }}, self).update()
+        super(Sprite, self).update()

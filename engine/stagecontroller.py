@@ -21,11 +21,7 @@ class StageController(object):
         self.sprite_groups = dict()
         self.pause = False
         self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_p, self.toggle_pause)
-        self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_n, self.next_level)
         self.currentstatus_elements = dict()
-
-    def next_level(self):
-        self.status = "level-init"
 
     def toggle_pause(self):
         self.pause = not self.pause
@@ -40,9 +36,6 @@ class StageController(object):
         self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_DOWN,  self.players["player_one"].keyrelease_down)
         self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_SPACE,  self.players["player_one"].keypress_space)
         self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_SPACE,  self.players["player_one"].keyrelease_space)
-
-    def initcutscene(self, cutsceneid):
-        pass
 
     def collisions(self):
         collision_elements = self.elements.copy()
@@ -81,72 +74,6 @@ class StageController(object):
                         point = pygame.sprite.collide_mask(collided_sprite, sprite)
                         collided_sprite.active_collisions.add(sprite)
                         collided_sprite.collision_points[sprite] = point
-
-
-    def change_status(self, status):
-        self.status = status
-
-    def gameover(self):
-        self.status = "menu-init"
-
-    def menu_shutdown(self):
-        self.event_queue.unsubscribe("keyboard", pygame.KEYUP, pygame.K_SPACE)
-        self.currentstatus_elements['startbutton'].destroyed = True
-        self.currentstatus_elements['title'].destroyed = True
-
-    def menu_startgame(self):
-        self.menu_shutdown()
-        self.status = "level-init"
-
-    def menu_init(self):
-        self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_SPACE, self.menu_startgame)
-        text = "Press space to start"
-        self.currentstatus_elements['startbutton'] = self.game_context.text.get_textsprite(text, style="subtitle")
-        titletext = "Zeroids"
-        self.currentstatus_elements['title'] = self.game_context.text.get_textsprite(titletext, style="title", color=(255,100,0))
-
-    def menu_update(self):
-        self.elements.add(self.currentstatus_elements['startbutton'])
-        self.elements.add(self.currentstatus_elements['title'])
-
-    def intralevel_init(self, room):
-        text = room.name
-        self.currentstatus_elements['levelname'] = self.game_context.text.get_textsprite(text, style="title")
-        self.status = "intralevel"
-        self.countdown = 2000
-
-    def intralevel_update(self, room):
-        self.countdown = self.countdown - self.clock.get_time()
-        if self.countdown <= 0:
-            self.status = "level"
-            self.currentstatus_elements['levelname'].destroyed = True
-        else:
-            self.elements.add(self.currentstatus_elements['levelname'])
-
-
-    def level_init(self, levelid=(0,0)):
-        self.players = self.worldmap.load_room(levelid)
-        self.init_controls(None)
-        text = "HEALTH: %d" % self.players['player_one'].health
-        self.currentstatus_elements['health'] = self.game_context.text.get_textsprite(text)
-
-    def level_update(self, room):
-        room_elements, mobs = room.update()
-        self.elements.add(room_elements.sprites(), layer=1)
-        self.elements.remove_sprites_of_layer(3)
-        text = "HEALTH: %d" % self.players['player_one'].health
-        self.currentstatus_elements['health'].set_text(text)
-        self.elements.add(self.currentstatus_elements['health'])
-        for mob in mobs:
-            self.elements.add(mob.sprites())
-        for player in self.players.values():
-            self.elements.add(player.sprites(), layer=2)
-        self.collisions()
-
-        # player on health = 0
-        # self.status = game over
-        # if level_completed
-        # self.status = "leve_init"
 
     def update(self):
         if self.pause:

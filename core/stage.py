@@ -34,8 +34,6 @@ class Stage(wx.StaticBox):
         self.timer.Start(self.timespacing, False)
         self.default_backcolor = (255, 255, 255)
 
-
-
     def OnIdle(self, ev):
         if not self._initialized or self._resized:
             if not self._initialized:
@@ -86,12 +84,8 @@ class Stage(wx.StaticBox):
     def clear(self):
         self.stage_controller.elements.empty()
 
-    def add_elements(self, name):
-        res = imp.load_source('element', '/tmp/element.py')
-        import element
-        cl = name.upper()
-        exec ('el = self.stage_context.spriteslib.get_sprite(element.%s, self.stage_context)' % cl)
-        print el
+    def add_elements(self, object_code):
+        el = self.stage_context.spriteslib.get_sprite(object_code.module.Sprite, self.stage_context)
         self.stage_controller.elements.add(el)
 
     def Redraw(self):
