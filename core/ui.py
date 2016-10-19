@@ -105,19 +105,32 @@ class RootWindow(wx.Frame):
 
     def setup_toolbar(self):
         self.tools = self.CreateToolBar()
-        play_image_bitmap =  wx.Bitmap('resources/images/play.png')
-        play_image = wx.ImageFromBitmap(play_image_bitmap)
-        play_image_scaled = play_image.Scale(30,30, wx.IMAGE_QUALITY_HIGH)
-        play_image = wx.BitmapFromImage(play_image_scaled)
-        playtool = self.tools.AddLabelTool(wx.ID_ANY, 'Play', play_image)
-        self.Bind(wx.EVT_TOOL, self.play, playtool)
-        stop_image_bitmap =  wx.Bitmap('resources/images/stop.png')
-        stop_image = wx.ImageFromBitmap(stop_image_bitmap)
-        stop_image_scaled = stop_image.Scale(30,30, wx.IMAGE_QUALITY_HIGH)
-        stop_image = wx.BitmapFromImage(stop_image_scaled)
-        stoptool = self.tools.AddLabelTool(wx.ID_ANY, 'stop', stop_image)
-        self.Bind(wx.EVT_TOOL, self.stop, stoptool)
+        self.add_toolbar_button(self.tools, 'resources/images/play.png', 'Play', self.play)
+        self.add_toolbar_button(self.tools, 'resources/images/stop.png', 'Stop', self.stop)
         self.tools.Realize()
+
+    def add_toolbar_button(self, toolbar, image_path, label_text, action_callable, width=30, height=30):
+        """Creates a button and add it to a toolbar
+           
+           Arguments:
+
+           toolbar         -- toolbar to attach the button into
+           image_path      -- path of the png image used to decorate the button
+           label_text      -- text of the button label 
+           action_callable -- function or method to call when the button is pushed
+
+           Keyword arguments:
+
+           width           -- button width in pixel (default: 30 => 30px)
+           height          -- button height in pixel (default: 30 => 30px)
+
+           Returns:
+           none
+        """
+        image = wx.ImageFromBitmap(wx.Bitmap(image_path))
+        image = wx.BitmapFromImage(image.Scale(width, height, wx.IMAGE_QUALITY_HIGH))
+        tool = toolbar.AddLabelTool(wx.ID_ANY, label_text, image)
+        self.Bind(wx.EVT_TOOL, action_callable, tool)
 
     def stop(self, event):
         # just for demo purpose
