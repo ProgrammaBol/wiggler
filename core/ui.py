@@ -13,6 +13,7 @@ class RootWindow(wx.Frame):
         wx.Frame.__init__(self,None, -1, "Menu")
         self.elements = {}
         self.current_element = None
+        self.selfsufficiency = 0
         self.SetMinSize((100,100))
 
         self.stage = Stage(self, wx.ID_ANY, size = (400,400))
@@ -87,12 +88,17 @@ class RootWindow(wx.Frame):
         self.basket_functions.DeleteAllItems()
         for index, attrib in enumerate(dir(MovingSprite)):
             self.basket_functions.InsertStringItem(index, attrib)
+        self.generated_code.SetReadOnly(0)
+        self.generated_code.SetText(self.current_element.element_code)
+        self.generated_code.SetReadOnly(1)
 
     def setup_object_area(self):
         self.tab = wx.Notebook(self, -1)
         self.editor = TextEditor(self.tab, wx.ID_ANY)
-        self.tab.AddPage(self.editor, "Codice")
+        self.generated_code = TextEditor(self.tab, wx.ID_ANY)
+        self.tab.AddPage(self.editor, "Code")
         self.tab.AddPage(wx.StaticText(self.tab, -1, "Costumes"), "Costumes")
+        self.tab.AddPage(self.generated_code, "Generated Code")
 
     def setup_menu(self):
         menu_exit_id = wx.NewId()
@@ -107,6 +113,8 @@ class RootWindow(wx.Frame):
         self.tools = self.CreateToolBar()
         self.add_toolbar_button(self.tools, 'resources/images/play.png', 'Play', self.play)
         self.add_toolbar_button(self.tools, 'resources/images/stop.png', 'Stop', self.stop)
+        self.add_toolbar_button(self.tools, 'resources/images/incss.png', 'incss', self.incss)
+        self.add_toolbar_button(self.tools, 'resources/images/decss.png', 'decss', self.decss)
         self.tools.Realize()
 
     def add_toolbar_button(self, toolbar, image_path, label_text, action_callable, width=30, height=30):
@@ -133,8 +141,15 @@ class RootWindow(wx.Frame):
         self.Bind(wx.EVT_TOOL, action_callable, tool)
 
     def stop(self, event):
-        # just for demo purpose
-        self.statusbar.SetStatusText("Self-Sufficiency Level: 1")
+        pass
+
+    def decss(self, event):
+        self.selfsufficiency -= 1
+        self.statusbar.SetStatusText("Self-Sufficiency Level: %d" % self.selfsufficiency)
+
+    def incss(self, event):
+        self.selfsufficiency += 1
+        self.statusbar.SetStatusText("Self-Sufficiency Level: %d" % self.selfsufficiency)
 
     def play(self, event):
         self.current_element.raw_code = self.editor.GetText()
@@ -143,6 +158,9 @@ class RootWindow(wx.Frame):
             spriteelement = self.elements[index]
             spriteelement.create_module()
             self.stage.add_elements(spriteelement)
+        self.generated_code.SetReadOnly(0)
+        self.generated_code.SetText(self.current_element.element_code)
+        self.generated_code.SetReadOnly(1)
 
     def exit(self, event):
         self.Close(True)
