@@ -58,7 +58,7 @@ class RootWindow(wx.Frame):
         self.basket_classes.InsertStringItem(1, "StaticSprite")
 
     def setup_shell(self):
-        self.shell = wx.py.crust.Crust(parent=self)
+        self.shell = wx.py.shell.Shell(parent=self)       
         self.shell.Show()
 
     def setup_sprites_list(self):
