@@ -1,3 +1,4 @@
+import cicciobello
 import wx
 import wx.py
 
@@ -58,7 +59,7 @@ class RootWindow(wx.Frame):
         self.basket_classes.InsertStringItem(1, "StaticSprite")
 
     def setup_shell(self):
-        self.shell = wx.py.shell.Shell(parent=self)       
+        self.shell = wx.py.shell.Shell(parent=self)
         self.shell.Show()
 
     def setup_sprites_list(self):
@@ -119,12 +120,12 @@ class RootWindow(wx.Frame):
 
     def add_toolbar_button(self, toolbar, image_path, label_text, action_callable, width=30, height=30):
         """Creates a button and add it to a toolbar
-           
+
            Arguments:
 
            toolbar         -- toolbar to attach the button into
            image_path      -- path of the png image used to decorate the button
-           label_text      -- text of the button label 
+           label_text      -- text of the button label
            action_callable -- function or method to call when the button is pushed
 
            Keyword arguments:
