@@ -1,91 +1,53 @@
-import pygame
+'''
+This module defines sprites
+'''
 import math
 import random
-
-
-class SpritesLib(object):
-
-    def __init__(self, game_context):
-        self.sheets = dict()
-        self.soundslib = game_context.sounds
-        self.clock = game_context.clock
-        self.resolution = game_context.resolution
-
-    def load_sheet(self, name):
-        if type(self.sheets[name]) != pygame.Surface:
-            filename, colorkey = self.sheets[name]
-            sheet_raw = pygame.image.load(filename)
-            sheet = sheet_raw.convert()
-            if colorkey:
-                sheet.set_colorkey(colorkey)
-            self.sheets[name] = sheet
-        return self.sheets[name]
-
-    def add_sheet(self, name, file_handle, colorkey=None):
-        self.sheets[name] = (file_handle, colorkey)
-
-    def get_image(self, sheet_name, rect):
-        spritesheet = self.load_sheet(sheet_name)
-        spriteimage = spritesheet.subsurface(rect).copy()
-        return spriteimage
-
-    def get_sprite(self,
-                   sprite_class,
-                   game_context,
-                   parent=None,
-                   initdata={},
-                   random_ranges={}):
-        sprite = sprite_class(
-            game_context,
-            parent=parent,
-            initdata=initdata,
-            random_ranges=random_ranges
-        )
-        if hasattr(sprite, "costumes_defs"):
-            for costume_name, costume_def in sprite.costumes_defs.items():
-                costume_position = costume_def
-                costume_sheet = costume_position[0]
-                costume_rect = costume_position[1]
-                costume_image = self.get_image(costume_sheet, costume_rect)
-                sprite.costumes[costume_name] = costume_image
-        sprite.change_active_costume(sprite.active_costume_name)
-        sprite.update()
-        return sprite
+import pygame
 
 
 class StaticSprite(pygame.sprite.Sprite):
 
-    def __init__(self, game_context, initdata={}, random_ranges={}, *group):
+    '''
+    defines a sprite that will not move relatively to the map
+    '''
+
+    def __init__(self, resources, initdata, *group):
         super(StaticSprite, self).__init__(*group)
-        self.game_context = game_context
-        self.random_position(random_ranges)
-        self.rect = initdata.get('rect', None)
+        self.resources = resources
+        self.centerx = initdata.get('centerx', 0)
+        self.centery = initdata.get('centery', 0)
+        self.visible = initdata.get('visible', False)
+        self.angle = initdata.get('angle', 0)
+        self.costumes = initdata.get('costumes_set', None)
+        self.image, self.rect = self.costumes.get_active()
+        self.animations = initdata.get('animations_set', None)
+        self.sounds = initdata.get('sounds_set', None)
+        self.immutable = initdata.get("immutable", False)
+        self.collisions = {
+            'active': pygame.sprite.OrderedUpdates(),
+            'handled': pygame.sprite.OrderedUpdates(),
+            'points': {},
+            'shape': "box",
+        }
+        self.destroyed = False
+        self.clock = self.resources.clock
+        random_ranges = initdata.get('random_ranges', {})
+        if random_ranges:
+            self.set_random_position(random_ranges)
         if self.rect is not None:
             self.centerx = self.rect.centerx
             self.centery = self.rect.centery
         else:
-            self.centerx = initdata.get('centerx', self.centerx)
-            self.centery = initdata.get('centery', self.centery)
-        self.visible = False
-        self.masks = dict()
-        self.active_costume_name = "default"
-        self.angle = initdata.get('angle', 0)
-        self.active_collisions = pygame.sprite.OrderedUpdates()
-        self.collision_points = {}
-        self.handled_collisions = pygame.sprite.OrderedUpdates()
-        self.shape = "rect"
-        self.immutable = initdata.get("immutable", False)
-        self.destroyed = False
-        self.clock = game_context.clock
+            self.centerx = initdata.get('centerx', self.center.x)
+            self.centery = initdata.get('centery', self.center.y)
 
-    def random_position(self, ranges):
-        centerx = 0
-        centery = 0
+    def set_random_position(self, ranges):
         centerx_min = ranges.get('centerx_min', None)
         if centerx_min is not None:
             centerx_max = ranges.get(
                 'centerx_max',
-                self.game_context.resolution[0]
+                self.resources.resolution[0]
             )
         else:
             centerx_max = None
@@ -93,7 +55,7 @@ class StaticSprite(pygame.sprite.Sprite):
         if centery_min is not None:
             centery_max = ranges.get(
                 'centery_max',
-                self.game_context.resolution[1]
+                self.resources.resolution[1]
             )
         else:
             centery_max = None
@@ -109,64 +71,53 @@ class StaticSprite(pygame.sprite.Sprite):
         if position_type == "offmap":
             border = random.choice(position_allowed_borders)
             if border == "top":
-                centerx = random.randint(0, self.game_context.resolution[0])
+                centerx = random.randint(0, self.resources.resolution[0])
                 centery = 0
             elif border == "bottom":
-                centerx = random.randint(0, self.game_context.resolution[0])
-                centery = self.game_context.resolution[1]
+                centerx = random.randint(0, self.resources.resolution[0])
+                centery = self.resources.resolution[1]
             elif border == "left":
                 centerx = 0
-                centery = random.randint(0, self.game_context.resolution[1])
+                centery = random.randint(0, self.resources.resolution[1])
             elif border == "right":
-                centerx = self.game_context.resolution[0]
-                centery = random.randint(0, self.game_context.resolution[0])
+                centerx = self.resources.resolution[0]
+                centery = random.randint(0, self.resources.resolution[0])
         self.centerx = centerx
         self.centery = centery
 
-    def change_active_costume(self, costume_name):
-        self.image = self.costumes[costume_name]
-        rect = self.costumes[costume_name].get_rect()
+    def set_costume(self, costume_name):
+        self.image, rect = self.costumes.set_active(costume_name)
         rect.centerx = self.centerx
         rect.centery = self.centery
         self.rect = rect
-        # self.mask = self.masks[costume_name]
-
-    def rotate(self):
-        if self.angle is not None:
-            center = self.rect.center
-            self.image = pygame.transform.rotate(
-                self.costumes[self.active_costume_name],
-                -self.angle
-            )
-            self.rect.size = self.image.get_rect().size
-            self.rect.center = center
 
     def update(self):
-        self.image = self.costumes[self.active_costume_name]
-        self.rotate()
+        center = self.rect.center
+        self.image, self.rect = self.costumes.get_active(rotate=self.angle)
+        self.rect.center = center
         # Clear collided sprite from handled
         # if it's not active collision anymore
-        for sprite in self.handled_collisions.sprites():
-            if sprite not in self.active_collisions:
-                self.handled_collisions.remove(sprite)
+        for sprite in self.collisions['handled'].sprites():
+            if sprite not in self.collisions['active']:
+                self.collisions['handled'].remove(sprite)
                 # del(self.collision_points[sprite])
         # Handle active collision if they've already handled
-        if self.active_collisions:
-            for sprite in self.active_collisions.sprites():
-                if sprite not in self.handled_collisions:
+        if self.collisions['active']:
+            for sprite in self.collisions['active'].sprites():
+                if sprite not in self.collisions['handled']:
                     self.handle_collision(sprite)
-                    self.handled_collisions.add(sprite)
+                    self.collisions['handled'].add(sprite)
 
 
 class MovingSprite(StaticSprite):
 
-    def __init__(self, game_context, initdata={}, random_ranges={}, *group):
+    def __init__(self, resources, initdata, *group):
         super(MovingSprite, self).__init__(
-            game_context,
-            initdata=initdata,
-            random_ranges=random_ranges,
+            resources,
+            initdata,
             *group
         )
+        random_ranges = initdata.get('random_ranges', {})
         self.random_movement(random_ranges)
         self.start_speed = initdata.get('start_speed', self.start_speed)
         self.direction = initdata.get('direction', self.direction)
@@ -183,7 +134,7 @@ class MovingSprite(StaticSprite):
         # DESTROY, BOUNCE, ROUNDRIBBON
         self.border_action = "roundribbon"
         self.ai_scheme = None
-        self.resolutionx, self.resolutiony = game_context.resolution
+        self.resolutionx, self.resolutiony = resources.resolution
         self.angle_is_direction = False
 
     def random_movement(self, ranges):
@@ -210,7 +161,6 @@ class MovingSprite(StaticSprite):
     def accelerate(self, x_component, y_component):
         frame_msec = self.clock.get_time()
         t = frame_msec / 1000.0
-        increment_perframe = float(frame_msec * self.acceleration) / 1000
         max_speed_x = abs(self.max_speed * x_component)
         max_speed_y = abs(self.max_speed * y_component)
         acceleration_x = self.acceleration * x_component * t

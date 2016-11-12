@@ -1,0 +1,11 @@
+ship:
+    costumes:
+        - 'ship_idle'
+        - 'ship_thrusting'
+    sounds: null
+    animations:
+    self_sufficiency: 0
+    user_code:
+        __init__: |
+    base_class: MovingSprite
+

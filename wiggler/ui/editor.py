@@ -23,6 +23,11 @@ class TextEditor(wx.stc.StyledTextCtrl):
         self.SetText(raw_code)
         self.SetReadOnly(0)
 
+    def set_readonly_buffer(self, text):
+        self.SetReadOnly(0)
+        self.SetText(text)
+        self.SetReadOnly(1)
+
     def SetValue(self, value):
         # if wx.USE_UNICODE:
         #    value = value.decode('utf_8')
@@ -57,8 +62,7 @@ class TextEditor(wx.stc.StyledTextCtrl):
         # Backspace unindents rather than delete 1 space
         self.SetTabIndents(True)            # Tab key indents
         self.SetTabWidth(4)                 # Proscribed tab size for wx
-        self.SetUseTabs(False)              # Use spaces rather than tabs, or
-                                            # TabTimmy will complain!
+        self.SetUseTabs(False)              # Use spaces rather than tabs
         # White space
         self.SetViewWhiteSpace(False)   # Don't view white space
         # EOL: Since we are loading/saving ourselves, and the
@@ -105,10 +109,12 @@ class TextEditor(wx.stc.StyledTextCtrl):
         # Global default style
         if wx.Platform == '__WXMSW__':
             self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,
-                              'fore:#000000,back:#FFFFFF,face:Courier New,size:9')
+                              'fore:#000000,back:#FFFFFF,'
+                              'face:Courier New,size:9')
         else:
             self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,
-                              'fore:#000000,back:#FFFFFF,face:Courier,size:12')
+                              'fore:#000000,back:#FFFFFF,'
+                              'face:Courier,size:12')
         # Clear styles and revert to default.
         self.StyleClearAll()
         # Following style specs only indicate differences from default.

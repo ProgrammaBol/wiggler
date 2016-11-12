@@ -8,6 +8,7 @@ addons:
         - python-wxgtk2.8
         - python-pygame
         - python-jinja2
+        - python-yaml
 virtualenv:
       system_site_packages: true
 install:
@@ -15,4 +16,4 @@ install:
     - python setup.py install
 script:
     - python setup.py flake8
-    - pylint wiggler/core wiggler/engine wiggler/elements
+    - pylint wiggler/core wiggler/engine wiggler/ui || true
