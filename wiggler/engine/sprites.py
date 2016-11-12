@@ -2,27 +2,35 @@ import pygame
 import math
 import random
 
+class Vector(object):
+
+    def __init__(self, startpos=(0,0)):
+        self.x = startpos[0]
+        self.y = startpos[1]
 
 class SpritesLib(object):
 
     def __init__(self, game_context):
         self.sheets = dict()
+        self.sheets_def = dict() # (name: filename, colorkey)
         self.soundslib = game_context.sounds
         self.clock = game_context.clock
         self.resolution = game_context.resolution
 
     def load_sheet(self, name):
-        if type(self.sheets[name]) != pygame.Surface:
-            filename, colorkey = self.sheets[name]
+        try:
+            return self.sheets[name]
+        except KeyError:
+            filename, colorkey = self.sheets_defs[name]
             sheet_raw = pygame.image.load(filename)
             sheet = sheet_raw.convert()
             if colorkey:
                 sheet.set_colorkey(colorkey)
             self.sheets[name] = sheet
-        return self.sheets[name]
+            return self.sheets[name]
 
-    def add_sheet(self, name, file_handle, colorkey=None):
-        self.sheets[name] = (file_handle, colorkey)
+    def add_sheet(self, name, filename, colorkey=None):
+        self.sheets_def[name] = (filename, colorkey)
 
     def get_image(self, sheet_name, rect):
         spritesheet = self.load_sheet(sheet_name)
@@ -58,15 +66,8 @@ class StaticSprite(pygame.sprite.Sprite):
     def __init__(self, game_context, initdata={}, random_ranges={}, *group):
         super(StaticSprite, self).__init__(*group)
         self.game_context = game_context
-        self.random_position(random_ranges)
-        self.rect = initdata.get('rect', None)
-        if self.rect is not None:
-            self.centerx = self.rect.centerx
-            self.centery = self.rect.centery
-        else:
-            self.centerx = initdata.get('centerx', self.centerx)
-            self.centery = initdata.get('centery', self.centery)
-        self.visible = False
+        self.center = Vector()
+        self.visible = initdata.get('visible', False)
         self.masks = dict()
         self.active_costume_name = "default"
         self.angle = initdata.get('angle', 0)
@@ -77,10 +78,18 @@ class StaticSprite(pygame.sprite.Sprite):
         self.immutable = initdata.get("immutable", False)
         self.destroyed = False
         self.clock = game_context.clock
+        if random_ranges:
+            self.set_random_position(random_ranges)
+        self.rect = initdata.get('rect', None)
+        if self.rect is not None:
+            self.center.x = self.rect.centerx
+            self.center.y = self.rect.centery
+        else:
+            self.center.x = initdata.get('centerx', self.center.x)
+            self.center.y = initdata.get('centery', self.center.y)
 
-    def random_position(self, ranges):
-        centerx = 0
-        centery = 0
+    def set_random_position(self, ranges):
+        center = Vector()
         centerx_min = ranges.get('centerx_min', None)
         if centerx_min is not None:
             centerx_max = ranges.get(
