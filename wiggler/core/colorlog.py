@@ -43,7 +43,6 @@ class ColorLogger(logging.Logger):
         if self.isEnabledFor(SUCCESS):
             self._log(SUCCESS, msg, args, **kwargs)
 
-
     def debugvar(self, var, *args, **kwargs):
         frame = inspect.currentframe()
         stack = inspect.getouterframes(frame)
@@ -53,15 +52,14 @@ class ColorLogger(logging.Logger):
         self.debug(msg, *args, **kwargs)
 
 
-
 def get_color_log():
     logging.setLoggerClass(ColorLogger)
     return logging.getLogger('log')
 
+
 def get_summary_log():
     logging.setLoggerClass(ColorLogger)
     return logging.getLogger('logsummary')
-
 
 log = get_color_log()
 logsummary = get_summary_log()

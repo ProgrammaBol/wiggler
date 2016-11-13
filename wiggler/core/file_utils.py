@@ -1,5 +1,12 @@
 import json
 import os
+import pkg_resources
+
+
+def get_resource_filename(resource_name):
+    filename = pkg_resources.resource_filename('wiggler', resource_name)
+    return filename
+
 
 def file_load(root_path, filepath, metadata):
     file_handle = open(filepath, "r")
@@ -10,23 +17,28 @@ def file_load(root_path, filepath, metadata):
         resource_metadata = None
     return resource_name, file_handle, resource_metadata
 
+
 def metadata_load(dirpath):
     try:
-        with open(os.path.join(dirpath,"metadata.json")) as metadata_file:
+        with open(os.path.join(dirpath, "metadata.json")) as metadata_file:
             metadata = json.load(metadata_file)
         return metadata
     except OSError:
         return None
 
+
 def loader(path, root_path=None):
     results = {}
     if os.path.isdir(path):
         if root_path is None:
-            root_path=path
+            root_path = path
         for dirpath, dirs, files in os.walk(path):
             metadata = metadata_load(dirpath)
             for filename in files:
-                resource_name, file_handle = file_load(root_path, os.path.join(dirpath,filename), metadata)
+                file_path = os.path.join(dirpath, filename)
+                resource_name, file_handle = file_load(root_path,
+                                                       file_path,
+                                                       metadata)
                 results.add(resource_name, file_handle, metadata)
     else:
         if root_path is None:

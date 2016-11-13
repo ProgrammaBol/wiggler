@@ -1,9 +1,10 @@
 import wx
 import wx.stc
 import wx.py
-from ui import RootWindow
 
-class Slither(wx.App):
+from wiggler.core.ui import RootWindow
+
+class Wiggler(wx.App):
 
     def OnInit(self):
         frame = RootWindow()
@@ -11,6 +12,7 @@ class Slither(wx.App):
         self.SetTopWindow(frame)
         return True
 
+
 def main():
-    app = Slither()
+    app = Wiggler()
     app.MainLoop()
