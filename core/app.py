@@ -3,6 +3,7 @@ import wx.stc
 import wx.py
 from ui import RootWindow
 
+
 class Slither(wx.App):
 
     def OnInit(self):
@@ -10,6 +11,7 @@ class Slither(wx.App):
         frame.Show(True)
         self.SetTopWindow(frame)
         return True
+
 
 def main():
     app = Slither()

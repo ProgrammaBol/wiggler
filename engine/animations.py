@@ -1,5 +1,6 @@
 from exceptions import AnimationEnded
 
+
 class Animation(object):
 
     def __init__(self, game_context, sprite, name, sound=None):
@@ -14,19 +15,32 @@ class Animation(object):
         self.sound_played = False
         self.count = 0
 
-    def add_sequence(self, sequence, total_duration, equal_time=False, defs=True):
+    def add_sequence(self,
+                     sequence,
+                     total_duration,
+                     equal_time=False,
+                     defs=True):
         # TYPE can be costumes or blitover
         for frame in sequence:
             if equal_time:
                 frame_image = frame
-                frame_duration = total_duration/len(sequence)
+                frame_duration = total_duration / len(sequence)
             else:
                 frame_image = frame[0]
                 frame_duration = frame[1]
-            self.append_frame(frame_image, duration_msec=frame_duration, defs=defs)
+            self.append_frame(
+                frame_image,
+                duration_msec=frame_duration,
+                defs=defs
+            )
 
     def append_frame(self, frame, duration_msec=0, defs=True):
-        self.set_frame(self.count, frame, duration_msec=duration_msec, defs=defs)
+        self.set_frame(
+            self.count,
+            frame,
+            duration_msec=duration_msec,
+            defs=defs
+        )
         self.count += 1
 
     def set_frame(self, number, frame, duration_msec=0, defs=True):
@@ -38,7 +52,6 @@ class Animation(object):
         else:
             self.sprite.costumes[costume_name] = frame
         self.sequence[costume_name] = duration_msec
-
 
     def update(self):
         if self.sound is not None and not self.sound_played:
@@ -53,6 +66,7 @@ class Animation(object):
             if self.playback_position > len(self.sequence) - 1:
                 raise AnimationEnded
             self.nextframe_countdown = self.sequence[costume_name]
+
 
 class Animations(object):
 
@@ -122,9 +136,16 @@ class Animations(object):
         ]
 
     def get_animation(self, sprite, name, size):
-        animation = Animation(self.game_context, sprite, name, sound=self.animations[name][size]['sound'])
-        animation.add_sequence(self.animations[name][size]['seq'],
-                               self.animations[name][size]['duration'],
-                               equal_time=self.animations[name][size]['equal-time'],
-                               defs=True)
+        animation = Animation(
+            self.game_context,
+            sprite,
+            name,
+            sound=self.animations[name][size]['sound']
+        )
+        animation.add_sequence(
+            self.animations[name][size]['seq'],
+            self.animations[name][size]['duration'],
+            equal_time=self.animations[name][size]['equal-time'],
+            defs=True
+        )
         return animation

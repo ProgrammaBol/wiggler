@@ -8,20 +8,34 @@ from engine.sprites import MovingSprite
 
 class AlloyShip(MovingSprite):
 
-    def __init__(self, game_context, parent=None, initdata={}, random_ranges={}, *group):
+    def __init__(self,
+                 game_context,
+                 parent=None,
+                 initdata={},
+                 random_ranges={},
+                 *group):
         self.max_speed = 100
         self.costumes = dict()
         self.costumes_defs = dict()
         self.costumes_defs["default"] = ("main", (481, 403, 29, 29))
         self.costumes_defs["thrusting"] = ("main", (481, 358, 29, 29))
-        super(AlloyShip, self).__init__(game_context, initdata=initdata, random_ranges=random_ranges, *group)
+        super(AlloyShip, self).__init__(
+            game_context,
+            initdata=initdata,
+            random_ranges=random_ranges,
+            *group
+        )
         self.collision_entity = "player"
         self.soundslib = game_context.sounds
         self.max_angular_speed = 180
         self.angle_is_direction = True
         self.parent = parent
         self.animations = {}
-        self.animations["explode"] = game_context.animations.get_animation(self, "explode", 3)
+        self.animations["explode"] = game_context.animations.get_animation(
+            self,
+            "explode",
+            3
+        )
 
     def rotate_left(self):
         self.angular_speed = -self.max_angular_speed
@@ -61,8 +75,8 @@ class AlloyShip(MovingSprite):
     def teleport(self):
         a = self.game_context.resolution[0] - self.centerx
         b = self.game_context.resolution[1] - self.centery
-        self.centerx = random.randint(int(a-100), int(a+100))
-        self.centery = random.randint(int(b-100), int(b+100))
+        self.centerx = random.randint(int(a - 100), int(a + 100))
+        self.centery = random.randint(int(b - 100), int(b + 100))
         self.rect.centerx = self.centerx
         self.rect.centery = self.centery
 
@@ -77,12 +91,23 @@ class AlloyShip(MovingSprite):
         if self.status == "exploded":
             self.destroyed = True
 
+
 class Player(pygame.sprite.Group):
 
-    def __init__(self, main_sprite_class, game_context, initdata={}, random_ranges={}):
+    def __init__(self,
+                 main_sprite_class,
+                 game_context,
+                 initdata={},
+                 random_ranges={}):
         super(Player, self).__init__()
         self.spriteslib = game_context.sprites
-        self.main_sprite = self.spriteslib.get_sprite(main_sprite_class, game_context, initdata=initdata, random_ranges=random_ranges, parent=self)
+        self.main_sprite = self.spriteslib.get_sprite(
+            main_sprite_class,
+            game_context,
+            initdata=initdata,
+            random_ranges=random_ranges,
+            parent=self
+        )
         self.add(self.main_sprite)
         self.weapons = dict()
         self.weapons["gun"] = Gun()
@@ -92,7 +117,11 @@ class Player(pygame.sprite.Group):
         self.health = 100
 
     def shoot(self):
-        ammo_sprite = self.spriteslib.get_sprite(self.current_weapon.ammo_class, self.game_context, parent=self)
+        ammo_sprite = self.spriteslib.get_sprite(
+            self.current_weapon.ammo_class,
+            self.game_context,
+            parent=self
+        )
         ammo_sprite.direction = self.main_sprite.direction
         ammo_sprite.centerx = self.main_sprite.centerx
         ammo_sprite.centery = self.main_sprite.centery
@@ -124,9 +153,9 @@ class Player(pygame.sprite.Group):
         self.main_sprite.thrust_off()
 
     def keypress_space(self):
-        if not self.main_sprite.destroyed or self.main_sprite.status not in ["exploding", "exploded"]:
+        if not self.main_sprite.destroyed \
+                or self.main_sprite.status not in ["exploding", "exploded"]:
             self.shoot()
 
     def keyrelease_space(self):
         self.stop_shooting()
-

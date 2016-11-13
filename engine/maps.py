@@ -4,63 +4,63 @@ from engine.sprites import StaticSprite
 from elements.players import Player, AlloyShip
 
 levels = {
-    (0,0): {
-        'name' : 'Level 1',
-        'size' : (32, 32),
-        'tilesize' : (30,30),
-        'tilemap' : None,
-        'player_pos' : (600,400),
+    (0, 0): {
+        'name': 'Level 1',
+        'size': (32, 32),
+        'tilesize': (30, 30),
+        'tilemap': None,
+        'player_pos': (600, 400),
     },
-    (0,1): {
-        'name' : 'Level 2',
-        'size' : (32, 32),
-        'tilesize' : (30,30),
-        'tilemap' : None,
-        'player_pos' : (600,400),
+    (0, 1): {
+        'name': 'Level 2',
+        'size': (32, 32),
+        'tilesize': (30, 30),
+        'tilemap': None,
+        'player_pos': (600, 400),
         'spawns': [
             {
                 "Asteroid": {
-                    'random_ranges' : {
-                        'direction_min' : 0,
-                        'direction_max' : 360,
-                        'speed_min' : 30,
-                        'speed_max' : 70,
-                        'position_type' : "offmap",
+                    'random_ranges': {
+                        'direction_min': 0,
+                        'direction_max': 360,
+                        'speed_min': 30,
+                        'speed_max': 70,
+                        'position_type': "offmap",
                     }
                 }
             },
         ]
     },
-    (0,2): {
-        'name' : 'Level 3',
-        'size' : (32, 32),
-        'tilesize' : (30,30),
-        'tilemap' : None,
-        'player_pos' : (600,400),
+    (0, 2): {
+        'name': 'Level 3',
+        'size': (32, 32),
+        'tilesize': (30, 30),
+        'tilemap': None,
+        'player_pos': (600, 400),
         'spawns': [
             {
                 "Ufo": {
-                    'random_ranges' : {
-                        'direction_min' : 0,
-                        'direction_max' : 360,
-                        'speed_min' : 30,
-                        'speed_max' : 70,
-                        'position_type' : "offmap",
+                    'random_ranges': {
+                        'direction_min': 0,
+                        'direction_max': 360,
+                        'speed_min': 30,
+                        'speed_max': 70,
+                        'position_type': "offmap",
                     }
                 }
             },
         ]
     },
-    (0,3): {
-        'name' : 'Level 4',
-        'size' : (32, 32),
-        'tilesize' : (30,30),
-        'tilemap' : None,
-        'player_pos' : (600,400),
+    (0, 3): {
+        'name': 'Level 4',
+        'size': (32, 32),
+        'tilesize': (30, 30),
+        'tilemap': None,
+        'player_pos': (600, 400),
         'spawns': [
             {
                 "Turret": {
-                    'random_ranges' : {
+                    'random_ranges': {
                         'centerx_min': 0,
                         'centery_min': 700
                     }
@@ -68,7 +68,7 @@ levels = {
             },
         ]
     },
-    (0,4): {
+    (0, 4): {
         'name': 'Level 5',
         'size': (32, 32),
         'tilesize': (30, 30),
@@ -77,41 +77,41 @@ levels = {
         'spawns': [
             {
                 "Asteroid": {
-                    'random_ranges' : {
-                        'interval_min' : 10,
-                        'interval_max' : 20,
-                        'count_min' : 3,
-                        'count_max' : 5,
-                        'direction_min' : 0,
-                        'direction_max' : 360,
-                        'speed_min' : 30,
-                        'speed_max' : 70,
-                        'position_type' : "offmap",
+                    'random_ranges': {
+                        'interval_min': 10,
+                        'interval_max': 20,
+                        'count_min': 3,
+                        'count_max': 5,
+                        'direction_min': 0,
+                        'direction_max': 360,
+                        'speed_min': 30,
+                        'speed_max': 70,
+                        'position_type': "offmap",
                     }
                 },
             },
             {
                 "Ufo": {
-                    'random_ranges' : {
-                        'interval_min' : 10,
-                        'interval_max' : 30,
-                        'count_min' : 1,
-                        'count_max' : 3,
-                        'direction_min' : 0,
-                        'direction_max' : 360,
-                        'speed_min' : 30,
-                        'speed_max' : 70,
-                        'position_type' : "offmap",
+                    'random_ranges': {
+                        'interval_min': 10,
+                        'interval_max': 30,
+                        'count_min': 1,
+                        'count_max': 3,
+                        'direction_min': 0,
+                        'direction_max': 360,
+                        'speed_min': 30,
+                        'speed_max': 70,
+                        'position_type': "offmap",
                     }
                 },
             },
             {
                 "Turret": {
-                    'random_ranges' : {
-                        'interval_min' : 20,
-                        'interval_max' : 60,
-                        'count_min' : 1,
-                        'count_max' : 2,
+                    'random_ranges': {
+                        'interval_min': 20,
+                        'interval_max': 60,
+                        'count_min': 1,
+                        'count_max': 2,
                         'centerx_min': 0,
                         'centery_min': 700
                     }
@@ -119,7 +119,8 @@ levels = {
             },
         ]
     },
-} # map defs
+}  # map defs
+
 
 class TileSet(dict):
 
@@ -161,7 +162,9 @@ class RoomMap(object):
         self.name = map_def['name']
         self.elements = pygame.sprite.Group()
         size = map_def['size']
-        self.tiles = list([None for r in range(size[1])] for c in range(size[0]))
+        self.tiles = list([None
+                           for r in range(size[1])]
+                          for c in range(size[0]))
         self.background = Background((0, 0, 0))
         self.tilesize = map_def['tilesize']
         self.tilemap = map_def['tilemap']
@@ -175,7 +178,11 @@ class RoomMap(object):
         player_initdata = dict()
         player_initdata['centerx'] = self.player_pos[0]
         player_initdata['centery'] = self.player_pos[1]
-        #self.players["player_one"] = Player(AlloyShip, self.game_context, initdata=player_initdata)
+        # self.players["player_one"] = Player(
+        #    AlloyShip,
+        #    self.game_context,
+        #    initdata=player_initdata
+        #)
 
         spawns = map_def.get('spawns', [])
         for spawn_group in spawns:
@@ -191,7 +198,10 @@ class RoomMap(object):
             self.elements.remove(tile)
             del(tile)
         tile = Tile(tileid)
-        tile.set_position(position[0] * self.tilesize[0], position[1] * self.tilesize[1])
+        tile.set_position(
+            position[0] * self.tilesize[0],
+            position[1] * self.tilesize[1]
+        )
         self.tiles[position[0]][position[1]] = tile
         self.elements.add(tile)
 
@@ -215,7 +225,6 @@ class RoomMap(object):
             mob_class = globals()[mob_class_name]
         except KeyError:
             return None
-
 
         self.spawns[mob_class.__name__] = {}
         count_min = random_ranges.get('count_min', 1)
@@ -242,13 +251,17 @@ class RoomMap(object):
         for mob_class, infos in self.spawns.iteritems():
             if infos['completed']:
                 continue
-            time = float(self.clock.get_time())/1000.0
+            time = float(self.clock.get_time()) / 1000.0
             infos['next_countdown'] -= time
             random_ranges = infos['random_ranges']
             if infos['next_countdown'] <= 0:
                 initdata = infos['initdata']
                 mob_class = infos['class']
-                mob = mob_class(self.game_context, initdata=initdata, random_ranges=random_ranges)
+                mob = mob_class(
+                    self.game_context,
+                    initdata=initdata,
+                    random_ranges=random_ranges
+                )
                 self.mobs.append(mob)
                 infos['last'] = mob
                 try:
@@ -258,10 +271,13 @@ class RoomMap(object):
 
         return self.elements, self.mobs
 
+
 class WorldMap(object):
 
     def __init__(self, game_context, size):
-        self.rooms = list([None for r in range(size[1])] for c in range(size[0]))
+        self.rooms = list([None
+                          for r in range(size[1])]
+                          for c in range(size[0]))
         self.current_room = None
         self.size = size
         self.game_context = game_context
@@ -270,20 +286,20 @@ class WorldMap(object):
         room = RoomMap(self.game_context, levelid)
         self.rooms[levelid[0]][levelid[1]] = room
 
-        #north = None
-        #south = None
-        #east = None
-        #west = None
-        #if levelid[1] != 0:
+        # north = None
+        # south = None
+        # east = None
+        # west = None
+        # if levelid[1] != 0:
         #    north = self.rooms[levelid[0]][levelid[1] + 1]
-        #if levelid[1] != self.size[1] - 1:
+        # if levelid[1] != self.size[1] - 1:
         #    south = self.rooms[levelid[0]][levelid[1] - 1]
-        #if levelid[0] != 0:
+        # if levelid[0] != 0:
         #    east = self.rooms[levelid[0] + 1][levelid[1]]
-        #if levelid[0] != self.size[0] - 1:
+        # if levelid[0] != self.size[0] - 1:
         #    west = self.rooms[levelid[0] - 1][levelid[1]]
 
-        #self.current_exits = (north, south, east, west)
+        # self.current_exits = (north, south, east, west)
         self.current_room = levelid
 
         return room.players
@@ -294,4 +310,4 @@ class WorldMap(object):
     def get_current_room_id(self):
         if self.current_room is None:
             return None
-        return (self.current_room[0],self.current_room[1])
+        return (self.current_room[0], self.current_room[1])

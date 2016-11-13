@@ -3,6 +3,7 @@ import pprint
 from engine.maps import RoomMap, WorldMap
 # levels (roomid)
 
+
 def weightedcollide():
     pass
 
@@ -20,22 +21,52 @@ class StageController(object):
         self.game_context = game_context
         self.sprite_groups = dict()
         self.pause = False
-        self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_p, self.toggle_pause)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYDOWN,
+                                   pygame.K_p,
+                                   self.toggle_pause)
         self.currentstatus_elements = dict()
 
     def toggle_pause(self):
         self.pause = not self.pause
 
     def init_controls(self, controls_config):
-        self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_LEFT,  self.players["player_one"].keypress_left)
-        self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_LEFT,  self.players["player_one"].keyrelease_left)
-        self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_RIGHT,  self.players["player_one"].keypress_right)
-        self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_RIGHT,  self.players["player_one"].keyrelease_right)
-        self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_UP,  self.players["player_one"].keypress_up)
-        self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_UP,  self.players["player_one"].keyrelease_up)
-        self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_DOWN,  self.players["player_one"].keyrelease_down)
-        self.event_queue.subscribe("keyboard", pygame.KEYDOWN, pygame.K_SPACE,  self.players["player_one"].keypress_space)
-        self.event_queue.subscribe("keyboard", pygame.KEYUP, pygame.K_SPACE,  self.players["player_one"].keyrelease_space)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYDOWN,
+                                   pygame.K_LEFT,
+                                   self.players["player_one"].keypress_left)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYUP,
+                                   pygame.K_LEFT,
+                                   self.players["player_one"].keyrelease_left)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYDOWN,
+                                   pygame.K_RIGHT,
+                                   self.players["player_one"].keypress_right)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYUP,
+                                   pygame.K_RIGHT,
+                                   self.players["player_one"].keyrelease_right)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYDOWN,
+                                   pygame.K_UP,
+                                   self.players["player_one"].keypress_up)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYUP,
+                                   pygame.K_UP,
+                                   self.players["player_one"].keyrelease_up)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYUP,
+                                   pygame.K_DOWN,
+                                   self.players["player_one"].keyrelease_down)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYDOWN,
+                                   pygame.K_SPACE,
+                                   self.players["player_one"].keypress_space)
+        self.event_queue.subscribe("keyboard",
+                                   pygame.KEYUP,
+                                   pygame.K_SPACE,
+                                   self.players["player_one"].keyrelease_space)
 
     def collisions(self):
         collision_elements = self.elements.copy()
@@ -46,7 +77,11 @@ class StageController(object):
         while collision_elements.sprites():
             sprite = collision_elements.sprites().pop(0)
             collision_elements.remove(sprite)
-            collided = pygame.sprite.spritecollide(sprite, collision_elements, False)
+            collided = pygame.sprite.spritecollide(
+                sprite,
+                collision_elements,
+                False
+            )
             if not collided:
                 continue
             for collided_sprite in collided:
@@ -60,18 +95,30 @@ class StageController(object):
                     point = pygame.sprite.collide_mask(sprite, collided_sprite)
                 elif collided_sprite.shape == "line" and sprite.shape != "line":
                     y = collided_sprite.m * sprite.centerx + collided_sprite.q
-                    if y >= sprite.rect.y and y <= sprite.rect.y + sprite.rect.height:
-                        point = pygame.sprite.collide_mask(sprite, collided_sprite)
+                    if y >= sprite.rect.y \
+                       and y <= sprite.rect.y + sprite.rect.height:
+                        point = pygame.sprite.collide_mask(
+                            sprite,
+                            collided_sprite
+                        )
                 elif collided_sprite.shape != "line" and sprite.shape == "line":
                     y = sprite.m * collided_sprite.centerx + sprite.q
-                    if y >= collided_sprite.rect.y and y <= collided_sprite.rect.y + collided_sprite.rect.height:
-                        point = pygame.sprite.collide_mask(sprite, collided_sprite)
+                    if y >= collided_sprite.rect.y \
+                       and y <= collided_sprite.rect.y \
+                            + collided_sprite.rect.height:
+                        point = pygame.sprite.collide_mask(
+                            sprite,
+                            collided_sprite
+                        )
                 if point:
                     if not sprite.immutable:
                         sprite.active_collisions.add(collided_sprite)
                         sprite.collision_points[collided_sprite] = point
                     if not collided_sprite.immutable:
-                        point = pygame.sprite.collide_mask(collided_sprite, sprite)
+                        point = pygame.sprite.collide_mask(
+                            collided_sprite,
+                            sprite
+                        )
                         collided_sprite.active_collisions.add(sprite)
                         collided_sprite.collision_points[sprite] = point
 
@@ -90,7 +137,7 @@ class StageController(object):
 
                 try:
                     sprite.parent.remove(sprite)
-                except (TypeError,AttributeError):
+                except (TypeError, AttributeError):
                     pass
 
         self.elements.update()
