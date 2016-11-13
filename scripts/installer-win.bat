@@ -1,5 +1,5 @@
 @echo  #---------------------------------------------#
-@echo  # slither prerequisites installer for Windows #
+@echo  # wiggler prerequisites installer for Windows #
 @echo  #---------------------------------------------#
 
 @echo off
