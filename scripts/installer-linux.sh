@@ -1,6 +1,6 @@
 #!/bin/sh
 echo  '#-------------------------------------------#'
-echo  '# slither prerequisites installer for Linux #'
+echo  '# wiggler prerequisites installer for Linux #'
 echo  '#-------------------------------------------#'
 echo  '#   installing PyGame   #'
 sudo apt-get install --assume-yes python-pygame

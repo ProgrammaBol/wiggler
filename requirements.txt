@@ -1,0 +1,3 @@
+wx
+jinja2
+pygame
