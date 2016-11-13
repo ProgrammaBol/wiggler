@@ -1,10 +1,11 @@
 import wx
 import wx.py
 
-from editor import TextEditor
-from spriteelements import SpriteElement
-from engine.sprites import MovingSprite
-from stage import Stage
+from wiggler.core.editor import TextEditor
+from wiggler.core.spriteelements import SpriteElement
+from wiggler.engine.sprites import MovingSprite
+from wiggler.core.stage import Stage
+from wiggler.core.file_utils import get_resource_filename
 
 
 class RootWindow(wx.Frame):
@@ -70,7 +71,7 @@ class RootWindow(wx.Frame):
         self.sprites.AssignImageList(self.il, wx.IMAGE_LIST_NORMAL)
 
         # Fixtures
-        spritesheet_bitmap = wx.Bitmap('resources/spritesheets/master.png')
+        spritesheet_bitmap = wx.Bitmap(get_resource_filename('resources/spritesheets/master.png'))
         spritesheet_image = wx.ImageFromBitmap(spritesheet_bitmap)
         subsize = wx.Rect(481, 403, 29, 29)
         image = spritesheet_image.GetSubImage(subsize)
@@ -114,13 +115,13 @@ class RootWindow(wx.Frame):
     def setup_toolbar(self):
         self.tools = self.CreateToolBar()
         self.add_toolbar_button(
-            self.tools, 'resources/images/play.png', 'Play', self.play)
+            self.tools, get_resource_filename('resources/images/play.png'), 'Play', self.play)
         self.add_toolbar_button(
-            self.tools, 'resources/images/stop.png', 'Stop', self.stop)
+            self.tools, get_resource_filename('resources/images/stop.png'), 'Stop', self.stop)
         self.add_toolbar_button(
-            self.tools, 'resources/images/incss.png', 'incss', self.incss)
+            self.tools, get_resource_filename('resources/images/incss.png'), 'incss', self.incss)
         self.add_toolbar_button(
-            self.tools, 'resources/images/decss.png', 'decss', self.decss)
+            self.tools, get_resource_filename('resources/images/decss.png'), 'decss', self.decss)
         self.tools.Realize()
 
     def add_toolbar_button(self,

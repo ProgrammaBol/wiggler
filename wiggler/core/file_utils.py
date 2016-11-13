@@ -1,5 +1,11 @@
 import json
 import os
+import pkg_resources
+
+
+def get_resource_filename(resource_name):
+    filename = pkg_resources.resource_filename('wiggler', resource_name)
+    return filename
 
 
 def file_load(root_path, filepath, metadata):

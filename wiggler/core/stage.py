@@ -3,8 +3,8 @@ import pygame
 import sys
 import wx
 
-from engine.datastructures import EventQueue, StageContext
-from engine.stagecontroller import StageController
+from wiggler.engine.datastructures import EventQueue, StageContext
+from wiggler.engine.stagecontroller import StageController
 
 tilemap = dict()
 
