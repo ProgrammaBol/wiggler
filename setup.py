@@ -23,12 +23,7 @@ setup(
     keywords='scratch pygame',
     packages=find_packages(),
     package_data={
-        'wiggler': ['resources/font/*.otf',
-                    'resources/images/*.png',
-                    'resources/images/*.jpg',
-                    'resources/sounds/*.wav',
-                    'resources/spritesheets/*.bmp',
-                    'resources/spritesheets/*.png']
+        'wiggler': ['resources/*/*'],
     },
     entry_points={
         'console_scripts': [

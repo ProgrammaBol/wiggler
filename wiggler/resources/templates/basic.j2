@@ -1,0 +1,18 @@
+from wiggler.engine.sprites import MovingSprite
+
+class Sprite(MovingSprite):
+
+    def __init__(self, resources, initdata, *group):
+        self.custom_update = self.update_generator()
+        super(Sprite, self).__init__(resources, initdata, *group)
+        {{ user_code['__init__']|indent(8) }}
+
+    def update_generator(self):
+        yield
+
+    def update(self):
+        try:
+            next(self.custom_update)
+        except StopIteration:
+            pass
+        super(Sprite, self).update()
