@@ -12,8 +12,9 @@ addons:
 virtualenv:
       system_site_packages: true
 install:
-    - pip install flake8 pylint
+    - pip install flake8 pylint nose
     - python setup.py install
 script:
-    - python setup.py flake8
     - pylint wiggler/core wiggler/engine wiggler/ui || true
+    - python setup.py flake8
+    - nosetests -v
