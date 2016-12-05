@@ -1,3 +1,2 @@
-
-class AnimationEnded(Exception):
+class ResourceError(Exception):
     pass

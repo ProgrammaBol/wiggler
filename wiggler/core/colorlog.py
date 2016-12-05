@@ -61,6 +61,7 @@ def get_summary_log():
     logging.setLoggerClass(ColorLogger)
     return logging.getLogger('logsummary')
 
+
 log = get_color_log()
 logsummary = get_summary_log()
 
