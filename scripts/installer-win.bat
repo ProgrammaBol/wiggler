@@ -23,18 +23,20 @@ if %PROCESSOR_ARCHITECTURE%==AMD64 (
 md installer
 echo  # installing Python 2.7 #
 IF NOT EXIST installer\%PYNAME% powershell -Command Invoke-WebRequest %ADDRPY% -OutFile installer\%PYNAME%
+echo  IMPORTANT: during setup, ADD python.exe TO PATH
 echo  NOTE: REMEMBER Python INSTALLATION DIR
 msiexec /i installer\%PYNAME%
 
 :: ask user for installation dir and set path properly
 set PYPATH=C:\Python27
+set PYSCRIPTS=C:\Python27\Scripts
 set /P INPUT=Is Python installation dir %PYPATH%?(Y/N): %=%
 If /I "%INPUT%"=="y" goto yes 
 If /I NOT "%INPUT%"=="y" goto no
 :no
 set /P PYPATH=Insert Python path: %=%
 :yes
-set PATH=%PATH%;%PYPATH%
+set PATH=%PATH%;%PYPATH%;%PYSCRIPTS%
 
 :: installing other software
 pip install --upgrade pip
@@ -54,4 +56,6 @@ IF NOT EXIST installer\%OUTWX% powershell -Command Invoke-WebRequest -Uri %URLWX
 
 echo  #   installing jinja2   #
 pip install jinja2
+echo  #   installing piyaml   #
+pip install pyaml
 @echo on
