@@ -21,15 +21,15 @@ For Linux:
 And follow the instructions.
 Now you are ready to install Wiggler. Inside the project root run the command:
 
-    `python setup.py install`
+    python setup.py install
 
 Now you are ready to start. You can simply run Wiggler by running this command:
 
-    `wiggler`
+    wiggler
 
 If you want to remove Wiggler, you can run this command:
 
-    `pip uninstall wiggler`
+    pip uninstall wiggler
 
 ### Windows XP users
 

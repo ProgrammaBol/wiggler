@@ -140,7 +140,7 @@ echo ##      See docs/installing.md for further reference      ##
 echo ############################################################
 goto exit
 :end
-echo  IMPORTANT: during setup, select full installation and all the defalut options
+echo IMPORTANT: during setup, select full installation and all the defalut options
 .\installer\%OUTWX%
 
 echo  #   installing Jinja2   #
