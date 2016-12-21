@@ -3,7 +3,7 @@
 @echo  #---------------------------------------------#
 
 @echo off
-:: detect windows architecture and set up variables accordingly 
+:: detect windows architecture and set up variables accordingly to prerequisites to download
 if %PROCESSOR_ARCHITECTURE%==AMD64 (
     set ADDRPY=https://www.python.org/ftp/python/2.7.12/python-2.7.12.amd64.msi 
 	set PYNAME=python-2.7.12.amd64.msi 
@@ -20,10 +20,36 @@ if %PROCESSOR_ARCHITECTURE%==AMD64 (
     set OUTWX=wxPython3.0-win32-3.0.2.0-py27.exe
 )
 
+set pversion=0
+
+::detect installed powershell version (if any) to use specific command in order to download requested prerequisites
+for /f %%i in ('powershell -Command $PSVersionTable.PSVersion.Major') do set pversion=%%i
+
 md installer
 echo  # installing Python 2.7 #
+
+If %pversion% GEQ 3 goto win8+ 
+If %pversion% GEQ 2 goto win7
+If %pversion% GEQ 0 goto winxp
+
+:win8+
 IF NOT EXIST installer\%PYNAME% powershell -Command Invoke-WebRequest %ADDRPY% -OutFile installer\%PYNAME%
-echo  IMPORTANT: during setup, ADD python.exe TO PATH
+goto end
+:win7
+IF NOT EXIST installer\%PYNAME% powershell (New-Object System.Net.WebClient).DownloadFile('%ADDRPY%', 'installer\%PYNAME%')
+goto end
+:winxp
+echo.
+echo ####################
+echo ## IMPORTANT NOTE ##
+echo ############################################################
+echo ## This installation script needs PowerShell 2 or higher. ##
+echo ##      See docs/installing.md for further reference      ##
+echo ############################################################
+goto exit
+:end
+
+echo  IMPORTANT: during setup, while selecting features to install, select ADD python.exe TO PATH
 echo  NOTE: REMEMBER Python INSTALLATION DIR
 msiexec /i installer\%PYNAME%
 
@@ -41,21 +67,86 @@ set PATH=%PATH%;%PYPATH%;%PYSCRIPTS%
 :: installing other software
 pip install --upgrade pip
 echo  #   installing PyGame   #
+
+If %pversion% GEQ 3 goto win8+ 
+If %pversion% GEQ 2 goto win7
+If %pversion% GEQ 0 goto winxp
+
+:win8+
 IF NOT EXIST installer\%PYGNAME% powershell -Command Invoke-WebRequest %ADDRPYG% -OutFile installer\%PYGNAME%
+goto end
+:win7
+IF NOT EXIST installer\%PYGNAME% powershell (New-Object System.Net.WebClient).DownloadFile('%ADDRPYG%', 'installer\%PYGNAME%')
+goto end
+:winxp
+echo.
+echo ####################
+echo ## IMPORTANT NOTE ##
+echo ############################################################
+echo ## This installation script needs PowerShell 2 or higher. ##
+echo ##      See docs/installing.md for further reference      ##
+echo ############################################################
+goto exit
+:end
+
 pip install installer\%PYGNAME%
 
 echo  # installing Setuptools #
+
+If %pversion% GEQ 3 goto win8+ 
+If %pversion% GEQ 2 goto win7
+If %pversion% GEQ 0 goto winxp
+
+:win8+
 IF NOT EXIST installer\ez_setup.py powershell -Command Invoke-WebRequest https://bootstrap.pypa.io/ez_setup.py -OutFile installer\ez_setup.py
+goto end
+:win7
+IF NOT EXIST installer\ez_setup.py powershell (New-Object System.Net.WebClient).DownloadFile('https://bootstrap.pypa.io/ez_setup.py', 'installer\ez_setup.py')
+goto end
+:winxp
+echo.
+echo ####################
+echo ## IMPORTANT NOTE ##
+echo ############################################################
+echo ## This installation script needs PowerShell 2 or higher. ##
+echo ##      See docs/installing.md for further reference      ##
+echo ############################################################
+goto exit
+:end
+
 python ./installer/ez_setup.py >nul
 
 del setuptools* 
 
 echo  #  installing wxPython  #
+
+If %pversion% GEQ 3 goto win8+ 
+If %pversion% GEQ 2 goto win7
+If %pversion% GEQ 0 goto winxp
+
+:win8+
 IF NOT EXIST installer\%OUTWX% powershell -Command Invoke-WebRequest -Uri %URLWX% -OutFile installer\%OUTWX% -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+goto end
+:win7
+IF NOT EXIST installer\%OUTWX% powershell (New-Object System.Net.WebClient).DownloadFile('%URLWX%', 'installer\%OUTWX%')
+goto end
+:winxp
+echo.
+echo ####################
+echo ## IMPORTANT NOTE ##
+echo ############################################################
+echo ## This installation script needs PowerShell 2 or higher. ##
+echo ##      See docs/installing.md for further reference      ##
+echo ############################################################
+goto exit
+:end
+echo IMPORTANT: during setup, select full installation and all the defalut options
 .\installer\%OUTWX%
 
-echo  #   installing jinja2   #
+echo  #   installing Jinja2   #
 pip install jinja2
-echo  #   installing piyaml   #
-pip install pyaml
+echo  #   installing PyYAML   #
+pip install pyyaml
+
+:exit
 @echo on
