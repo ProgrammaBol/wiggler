@@ -1,6 +1,7 @@
 import unittest
 
 from wiggler.core.resources import Resources
+from wiggler.core.datastructures import OverlayDict
 
 
 class BasicTest(unittest.TestCase):
@@ -9,7 +10,9 @@ class BasicTest(unittest.TestCase):
         self.resources = Resources()
 
     def runTest(self):
-        self.assertIsInstance(self.resources.sheets, dict)
+        with open("/tmp/log", 'w') as f:
+            f.write(str(type(self.resources.sheets)))
+        self.assertIs(type(self.resources.sheets), OverlayDict)
 
 
 if __name__ == '__main__':
