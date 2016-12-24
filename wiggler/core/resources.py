@@ -1,9 +1,7 @@
-import copy
 import os
 import yaml
 import pkg_resources
 import pygame
-import tempfile
 
 from wiggler.engine.factories.sounds import SoundChannels, Sound
 from wiggler.engine.factories.sheets import Animation, Costume, Sheet
@@ -13,123 +11,13 @@ from wiggler.core.factories.templates import Template
 from wiggler.core.factories.characters import Character
 from wiggler.core.factories.ui_images import UIimage
 from wiggler.core.cast import Cast
-
-
-class ResourcesTree(object):
-
-    def __init__(self, base_path, types):
-        self.base_path = base_path
-        self.types = types
-
-        self.paths = {}
-        for resource_type in self.types:
-            self.paths[resource_type] = os.path.join(base_path, resource_type)
-            setattr(self, resource_type, {})
-
-        tree_walk = {}
-        for root, dirs, files in os.walk(self.base_path):
-            tree_walk[root] = (dirs, files)
-        for resource_type in self.types:
-            self.scan_resource_type(resource_type, tree_walk)
-
-    @staticmethod
-    def load_metadata(filename):
-        metadata = {}
-        with open(filename) as metadata_file:
-            try:
-                for doc in yaml.load_all(metadata_file):
-                    metadata.update(doc)
-            except yaml.ScannerError:
-                pass
-        return metadata
-
-    def scan_resource_type(self, resource_type, tree_walk):
-        type_metadata = {}
-        type_path = self.paths[resource_type]
-        resource_attr = getattr(self, resource_type)
-        try:
-            void, resources_list = tree_walk[type_path]
-        except KeyError:
-            return
-        type_metadata_filename = os.extsep.join([resource_type, "yaml"])
-        type_metadata_path = os.path.join(type_path, type_metadata_filename)
-        try:
-            resources_list.pop(resources_list.index(type_metadata_filename))
-            type_metadata = self.load_metadata(type_metadata_path)
-        except (IndexError, ValueError):
-            pass
-        meta_only = self.types[resource_type]['meta_only']
-        if meta_only:
-            resource_attr.update(type_metadata)
-            return
-        for resource_file in resources_list:
-            resource = {}
-            resource_path = os.path.join(type_path, resource_file)
-            resource_name, resource_ext = os.path.splitext(resource_file)
-            try:
-                resource_metadata = type_metadata[resource_file]
-                try:
-                    resource_name = resource_metadata.pop('name')
-                except KeyError:
-                    pass
-                resource.update(resource_metadata)
-            except KeyError:
-                pass
-
-            resource['abs_path'] = os.path.join(resource_path)
-            resource_attr[resource_name] = resource
-
-    def save_metadata(self):
-        for resource_type, type_def in self.types.items():
-            meta_only = type_def['meta_only']
-            resources = getattr(self, resource_type)
-            save_data = []
-            for resource_name, resource_definition in resources.items():
-                if resource_definition.pop('modified', False):
-                    metadata_filename = resource_type + os.extsep + "yaml"
-                    metadata_path = os.path.join(
-                        self.base_path, resource_type, metadata_filename)
-                    if meta_only is True:
-                        resource_data = {resource_name: resource_definition}
-                    else:
-                        resource_filename = os.path.basename(
-                            resource_definition['abs_path'])
-                        resource_data = {
-                            resource_filename: resource_definition}
-                    save_data.append(resource_data)
-            yaml.dump_all(save_data, metadata_path)
-
-    def new_resource(self, resource_type, resource_name, definition):
-        resource_dict = getattr(self, resource_type)
-        meta_only = self.types[resource_type]['meta_only']
-        if meta_only is False:
-            filename = definition.pop('filename')
-            definition['abs_path'] = os.path.join(
-                self.base_path, resource_type, filename)
-        resource_dict[resource_name] = definition
-
-    def save_resource(self, resource_definition, data):
-        filename = resource_definition['abs_path']
-        with open(filename, "w") as resource_file:
-            resource_file.write(data)
+from wiggler.core.project import Project
+from wiggler.core.datastructures import OverlayDict
 
 
 class Resources(object):
 
     def __init__(self):
-
-        self.types = {'sounds': {'meta_only': False},
-                      'sheets': {'meta_only': False},
-                      'sprites': {'meta_only': True},
-                      'images': {'meta_only': False},
-                      'musics': {'meta_only': False},
-                      'fonts': {'meta_only': False},
-                      'animations': {'meta_only': True},
-                      'costumes': {'meta_only': True},
-                      'templates': {'meta_only': False},
-                      'characters': {'meta_only': True},
-                      'ui_images': {'meta_only': False},
-                      }
 
         # self.main_event_queue = EventQueue()
         self.factories = {}
@@ -143,51 +31,117 @@ class Resources(object):
         self.factories['ui_images'] = UIimage
 
         self.load_conf()
+        self.types = set(
+            ['sounds', 'sheets', 'sprites', 'images', 'musics', 'fonts',
+             'animations', 'costumes', 'templates', 'characters',
+             'ui_images'])
+        for resource_type in self.types:
+            setattr(self, resource_type, OverlayDict())
         library_basepath = pkg_resources.resource_filename('wiggler',
                                                            "resources")
 
-        self.library = ResourcesTree(library_basepath, self.types)
-        self.project = None
-        self.set_dicts()
+        self.scan_tree(library_basepath)
+        # Switch all the dicts to overlay
+        for resource_type in self.types:
+            res_attr = getattr(self, resource_type)
+            res_attr.switch = "both"
+        self.new_project()
 
+        # TODO: move to project
         self.cast = Cast(self)
 
         # pygame resources
         self.clock = None
         self.resolution = None
 
-    def set_dicts(self):
-        for resource_type in self.types:
-            d = copy.copy(getattr(self.library, resource_type))
-            if self.project is not None:
-                d.update(getattr(self.project, resource_type))
-            setattr(self, resource_type, d)
+    @staticmethod
+    def load_metadata(base_path, filename):
+        metadata = {}
+        file_path = os.path.join(base_path, filename)
+        with open(file_path) as metadata_file:
+            try:
+                for doc in yaml.load_all(metadata_file):
+                    metadata.update(doc)
+            except yaml.ScannerError:
+                pass
+        return metadata
 
-    def remove_resource(self, resource_type, name):
-        d = getattr(self, resource_type)
-        if self.project is not None:
-            dp = getattr(self.project, resource_type)
-            del dp[name]
-        dl = getattr(self.library, resource_type)
-        try:
-            d[name] = copy.copy(dl[name])
-        except KeyError:
-            del d[name]
+    @staticmethod
+    def load_file_resource(type_path, filename, metadata=None):
+        resource = {}
+        resource['abs_path'] = os.path.join(type_path, filename)
+        resource_name, resource_ext = os.path.splitext(filename)
+        if metadata is not None:
+            resource.update(metadata)
+            try:
+                resource_name = metadata.pop('name')
+            except KeyError:
+                pass
+        return resource_name, resource
 
-    def new_resource(self, resource_type, name, definition):
-        d = getattr(self, resource_type)
-        if self.project is not None:
-            dp = getattr(self.project, resource_type)
-        self.project.new_resource(resource_type, name, definition)
-        d[name] = copy.copy(dp[name])
-        resource = self.load_resource(resource_type, name)
-        return resource
+    def scan_tree(self, base_path):
+        tree_walk = {}
+        for root, dirs, files in os.walk(base_path):
+            tree_walk[root] = (dirs, files)
+        avail_fileres, metadata_files = tree_walk.pop(base_path)
+        metadata_paths = {}
+        for filename in metadata_files:
+            name, ext = os.path.splitext(filename)
+            if ext == ".yaml":
+                metadata_paths[name] = filename
+        avail_metadata = metadata_paths.keys()
+        # Validation, only valid resources will be taken into consideration
+        avail_fileres = set(avail_fileres).intersection(self.types)
+        avail_metadata = set(avail_metadata).intersection(self.types)
+        self.load_metaonly_res(
+            base_path, avail_fileres, avail_metadata, metadata_paths)
+        self.load_fileonly_res(
+            base_path, tree_walk, avail_fileres, avail_metadata)
+        self.load_filemeta_res(
+            base_path, tree_walk, avail_fileres, avail_metadata,
+            metadata_paths)
 
-    def load_resource(self, resource_type, resource_name):
-        resource_def = getattr(self, resource_type)[resource_name]
-        factory = self.factories[resource_type]
-        instance = factory(self, resource_name, resource_def)
-        return instance
+    def load_metaonly_res(self, base_path, avail_fileres, avail_metadata,
+                          metadata_paths):
+        # metadata-only resources
+        metaonly_res = avail_metadata - avail_fileres
+        for resource_type in metaonly_res:
+            metadata = self.load_metadata(
+                base_path, metadata_paths[resource_type])
+            resource_attr = getattr(self, resource_type)
+            resource_attr.update(metadata)
+
+    def load_fileonly_res(self, base_path, tree_walk, avail_fileres,
+                          avail_metadata):
+        # file only resources
+        file_only_resources = avail_fileres - avail_metadata
+        for resource_type in file_only_resources:
+            resource_attr = getattr(self, resource_type)
+            type_path = os.path.join(base_path, resource_type)
+            void, file_list = tree_walk[type_path]
+            for filename in file_list:
+                resource_name, resource = self.load_file_resource(
+                    type_path, filename)
+                resource_attr[resource_name] = resource
+
+    def load_filemeta_res(self, base_path, tree_walk, avail_fileres,
+                          avail_metadata, metadata_paths):
+        # file resources with metadata
+        file_and_meta_res = avail_fileres.intersection(avail_metadata)
+        for resource_type in file_and_meta_res:
+            resource_attr = getattr(self, resource_type)
+            type_path = os.path.join(base_path, resource_type)
+            void, file_list = tree_walk[type_path]
+            for filename in file_list:
+                metadata = self.load_metadata(
+                    base_path, metadata_paths[resource_type])
+                try:
+                    resource_metadata = metadata[filename]
+                except KeyError:
+                    resource_metadata = None
+                resource_name, resource = self.load_file_resource(
+                    type_path, filename, metadata=resource_metadata)
+                resource_attr[resource_name] = resource
 
     def set_pygame_resources(self):
         self.resolution = self.conf['stage_resolution']
@@ -196,36 +150,6 @@ class Resources(object):
         self.sound_channels = SoundChannels(sound_channels, reserved_channels)
         self.clock = pygame.time.Clock()
         self.events = EventQueue()
-
-    def create_new_project(self, name=None):
-        if name is None:
-            name = "untitled1"
-        project_dir = tempfile.mkdtemp(prefix="wiggler-")
-        os.mkdir(os.path.join(project_dir, "resources"))
-        project_def = {
-            'name': name,
-            'characters': None,
-            'background': None,
-        }
-        with open(os.path.join(project_dir,
-                               "project.yaml"), "w") as project_file:
-            yaml.dump(project_def, project_file)
-        self.load_project(project_dir=project_dir)
-
-    def load_project(self, project_filename=None, project_dir=None):
-        if project_filename is not None:
-            # unzip project file to project_dir
-            pass
-        self.project = ResourcesTree(os.path.join(project_dir,
-                                                  "resources"), self.types)
-        try:
-            projectdef_filename = os.path.join(project_dir,
-                                               "project.yaml")
-            with open(projectdef_filename) as project_file:
-                self.project_definition = yaml.load(project_file.read())
-        except IOError:
-            pass
-        self.set_dicts()
 
     def load_conf(self):
         self.conf = {
@@ -240,6 +164,74 @@ class Resources(object):
         #        self.conf = yaml.load(conf_file.read())
         # except IOError:
         #    pass
+
+    def new_project(self):
+        self.load_project(filename=None)
+
+    def load_project(self, filename):
+        if hasattr(self, "project"):
+            if self.project.needs_save:
+                pass
+            self.project.cleanup()
+        self.project = Project(filename=filename)
+        self.scan_tree(self.project.temp_dir)
+
+    def save_project(self, filename):
+        self.project.save(filename)
+
+    def new_resource(self, resource_type, name, definition):
+        res_dict = getattr(self, resource_type)
+
+        try:
+            filename = definition.pop('filename')
+            data = definition.pop('data')
+            definition['abs_path'] = os.path.join(
+                self.project.temp_dir, resource_type, filename)
+            filename = definition['abs_path']
+            with open(filename, "w") as resource_file:
+                resource_file.write(data)
+        except KeyError:
+            pass
+        res_dict[name] = definition
+
+        resource = self.load_resource(resource_type, name)
+        return resource
+
+    def save_resource(self, res_type, definition):
+        try:
+            filename = definition.pop('abs_path')
+            data = definition.pop('data')
+            with open(filename, "w") as resource_file:
+                resource_file.write(data)
+        except KeyError:
+            pass
+
+        # This part should rewrite metadata file
+        # res_dict = getattr(self, resource_type)
+        # save_data = []
+        # for resource_name, resource_definition in res_dict.items():
+        #    metadata_filename = resource_type + os.extsep + "yaml"
+        #    metadata_path = os.path.join(
+        #        self.project.temp_dir, resource_type, metadata_filename)
+        #    if meta_only is True:
+        #        resource_data = {resource_name: resource_definition}
+        #    else:
+        #        resource_filename = os.path.basename(
+        #            resource_definition['abs_path'])
+        #        resource_data = {
+        #            resource_filename: resource_definition}
+        #    save_data.append(resource_data)
+        # yaml.dump_all(save_data, metadata_path)
+
+    def load_resource(self, resource_type, resource_name):
+        resource_def = getattr(self, resource_type)[resource_name]
+        factory = self.factories[resource_type]
+        instance = factory(self, resource_name, resource_def)
+        return instance
+
+    def remove_resource(self, resource_type, name):
+        res_dict = getattr(self, resource_type)
+        del res_dict[name]
 
     def load_ui_images(self, ui_image_name):
         return self.load_resource('ui_images', ui_image_name)

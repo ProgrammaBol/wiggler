@@ -8,7 +8,6 @@ class Wiggler(wx.App):
 
     def OnInit(self):
         self.resources = Resources()
-        self.resources.create_new_project()
         frame = RootWindow(self.resources)
         frame.Show(True)
         self.SetTopWindow(frame)
