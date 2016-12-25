@@ -39,6 +39,3 @@ class EventQueue(object):
     def update(self):
         for event in pygame.event.get():
             self.events.append(event)
-        # TODO: Implement event passthrough
-        # for event in wx.events
-        #     self.events.append(event.translate)

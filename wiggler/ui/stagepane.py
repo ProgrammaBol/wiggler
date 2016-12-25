@@ -4,14 +4,15 @@ import sys
 import wx
 
 from wiggler.engine.stage import Stage
+from wiggler.core.events import StageEvents
 
 tilemap = dict()
 
 
-class StagePane(wx.StaticBox):
+class StagePane(wx.Control):
 
     def __init__(self, parent, id, resources, events, **options):
-        wx.StaticBox.__init__(*(self, parent, id, 'SDL window'), **options)
+        wx.Control.__init__(*(self, parent, id), **options)
         self.parent = parent
         self.resources = resources
         self.stage = Stage(self.resources)
@@ -23,6 +24,7 @@ class StagePane(wx.StaticBox):
         self.__needsDrawing = 1
         self.size = self.GetSizeTuple()
 
+        self.stageevents = StageEvents()
         wx.EVT_SIZE(self, self.OnSize)
         wx.EVT_IDLE(self, self.OnIdle)
         self.timer = wx.Timer(self)
@@ -30,6 +32,9 @@ class StagePane(wx.StaticBox):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_TIMER, self.Update, self.timer)
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
+        self.Bind(wx.EVT_KEY_DOWN, self.stageevents.translate_key)
+        self.Bind(wx.EVT_KEY_UP, self.stageevents.translate_key)
+        self.Bind(wx.EVT_MOUSE_EVENTS, self.stageevents.translate_mouse)
 
         self.max_fps = 25.0
         self.timespacing = 1000.0 / self.max_fps
