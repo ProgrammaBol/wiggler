@@ -8,6 +8,9 @@ from wiggler.core.project import Project
 
 class Wiggler(wx.App):
 
+    def __init__(self, redirect=True, filename=None):
+        wx.App.__init__(self, redirect, filename)
+
     def OnInit(self):
         self.resources = Resources()
         self.events = Events()
