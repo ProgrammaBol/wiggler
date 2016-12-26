@@ -1,13 +1,25 @@
 import wx
 import wx.py
+import sys
+import gettext
 
 from wiggler.core.project import Project
 from wiggler.core.events import Events
 from wiggler.ui.stagepane import StagePane
 from wiggler.ui.toolbar import ToolBar
+from wiggler.ui.menubarfactory import MenuBarFactory
 from wiggler.ui.characterspane import CharactersPane
 from wiggler.ui.code_pane import CodePane
 from wiggler.ui.spritespane import SpritesPane
+
+kwargs = {}
+if sys.version_info[0] > 3:
+    # In Python 2, ensure that the _() that gets installed into built-ins
+    # always returns unicodes.  This matches the default behavior under
+    # Python 3, although that keyword argument is not present in the
+    # Python 3 API.
+    kwargs['unicode'] = True
+gettext.install("wiggler", **kwargs)
 
 
 class RootWindow(wx.Frame):
@@ -23,7 +35,8 @@ class RootWindow(wx.Frame):
             self, wx.ID_ANY, self.resources, self.events,
             size=self.stage_resolution)
 
-        self.setup_menu()
+        # self.setup_menu()
+        self.create_menu_bar()
         self.toolbar = ToolBar(self.resources, self)
 
         self.code_pane = CodePane(self, self.resources, self.events)
@@ -42,6 +55,81 @@ class RootWindow(wx.Frame):
 
         self.widget_placement()
         self.Layout()
+
+    def create_menu_bar(self):
+        menu_schema = [{"title": _("&File"),
+            "items": [
+                {"title": _("&New project"),
+                 "description": _("Create a new project"),
+                 "id": wx.ID_NEW,
+                 "handler": self.on_new_project},
+                {"title": _("&Load project"),
+                 "description": _("Load a project from disk"),
+                 "id": wx.ID_OPEN,
+                 "handler": self.on_open_project},
+                {"title": _("&Save project"),
+                 "description": _("Save a project to disk"),
+                 "id": wx.ID_SAVE,
+                 "handler": self.on_save_project},
+                {"title": _("&Duplicate project"),
+                 "description": _("Save a project to disk changing its name"),
+                 "id": wx.ID_SAVEAS,
+                 "handler": self.on_saveas_project},
+                {},
+                {"title": _("&Examples"),
+                 "description": _("Load one of the example projects"),
+                 #"id": wx.ID_SAVEAS,
+                 "handler": self.test_load},
+                {},
+                {"title": _("E&xit"),
+                 "description": _("Close Wiggler"),
+                 "id": wx.ID_EXIT,
+                 "handler": self.exit}
+            ]},
+            {"title": _("&Modify"),
+                 "items": [
+                    {"title": _("&Undo"),
+                     "description": _("Undo the last action"),
+                     "id": wx.ID_UNDO,
+                    #"handler": self.on_undo
+                    },
+                    {"title": _("&Redo"),
+                     "description": _("Redo the last action"),
+                     "id": wx.ID_REDO,
+                    #"handler": self.on_redo
+                    },
+                    {},
+                    {"title": _("&Copy"),
+                     "description": _("Copy selected text to the clipboard"),
+                     "id": wx.ID_COPY,
+                     # "handler": self.on_copy
+                    },
+                    {"title": _("&Cut"),
+                     "description": _("Move selected text to the clipboard"),
+                     "id": wx.ID_CUT,
+                     #"handler": self.on_cut
+                    },
+                    {"title": _("&Paste"),
+                     "description": _("Paste text from the clipboard"),
+                     "id": wx.ID_PASTE,
+                     # "handler": self.on_paste
+                    },
+                    {},
+                    {"title": _("Pr&eferences"),
+                     "description": _("Open the preference dialog"),
+                     #"id": wx.ID_ANY,
+                     # "handler": self.on_paste
+                    }
+                    ]
+            },
+            {"title": _("&Appearance"),
+                "items": [
+                    {}
+                ]
+            }
+        ]
+        bf = MenuBarFactory(self, menu_schema)
+        self.SetMenuBar(bf.menubar())
 
     def widget_placement(self):
         sizer = wx.GridBagSizer()
@@ -81,7 +169,7 @@ class RootWindow(wx.Frame):
         wx.EVT_MENU(self, menu_exit_id, self.exit)
         wx.EVT_MENU(self, menu_testload_id, self.test_load)
         menu_bar = wx.MenuBar()
-        menu_bar.Append(file_menu, "File")
+        menu_bar.Append(file_menu, "&File")
         self.SetMenuBar(menu_bar)
 
     def exit(self, event):
@@ -99,3 +187,17 @@ class RootWindow(wx.Frame):
     def play(self, event):
         # TODO move to project
         self.project.play()
+
+# EVT handlers
+
+    def on_new_project(self, event):
+        pass
+
+    def on_open_project(self, event):
+        pass
+
+    def on_save_project(self, event):
+        pass
+
+    def on_saveas_project(self, event):
+        pass
