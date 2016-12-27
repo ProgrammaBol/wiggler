@@ -68,7 +68,11 @@ class MenuBarFactory(object):
                         item.get("description"),
                     )
                     if item.get("handler") is not None:
-                        self.parent.Bind(wx.EVT_MENU, item["handler"], menuitem)
+                        self.parent.Bind(
+                            wx.EVT_MENU,
+                            item["handler"],
+                            menuitem
+                        )
             self.bar.Append(current, menu["title"])
 
     def menubar(self):

@@ -57,7 +57,8 @@ class RootWindow(wx.Frame):
         self.Layout()
 
     def create_menu_bar(self):
-        menu_schema = [{"title": _("&File"),
+        menu_schema = [{
+            "title": _("&File"),
             "items": [
                 {"title": _("&New project"),
                  "description": _("Create a new project"),
@@ -78,7 +79,7 @@ class RootWindow(wx.Frame):
                 {},
                 {"title": _("&Examples"),
                  "description": _("Load one of the example projects"),
-                 #"id": wx.ID_SAVEAS,
+                 # "id": wx.ID_SAVEAS,
                  "handler": self.test_load},
                 {},
                 {"title": _("E&xit"),
@@ -87,44 +88,43 @@ class RootWindow(wx.Frame):
                  "handler": self.exit}
             ]},
             {"title": _("&Modify"),
-                 "items": [
-                    {"title": _("&Undo"),
-                     "description": _("Undo the last action"),
-                     "id": wx.ID_UNDO,
-                    #"handler": self.on_undo
-                    },
-                    {"title": _("&Redo"),
-                     "description": _("Redo the last action"),
-                     "id": wx.ID_REDO,
-                    #"handler": self.on_redo
-                    },
-                    {},
-                    {"title": _("&Copy"),
-                     "description": _("Copy selected text to the clipboard"),
-                     "id": wx.ID_COPY,
-                     # "handler": self.on_copy
-                    },
-                    {"title": _("&Cut"),
-                     "description": _("Move selected text to the clipboard"),
-                     "id": wx.ID_CUT,
-                     #"handler": self.on_cut
-                    },
-                    {"title": _("&Paste"),
-                     "description": _("Paste text from the clipboard"),
-                     "id": wx.ID_PASTE,
-                     # "handler": self.on_paste
-                    },
-                    {},
-                    {"title": _("Pr&eferences"),
-                     "description": _("Open the preference dialog"),
-                     #"id": wx.ID_ANY,
-                     # "handler": self.on_paste
-                    }
-                    ]
-            },
-            {"title": _("&Appearance"),
-                "items": [
-                    {}
+             "items": [{
+                 "title": _("&Undo"),
+                 "description": _("Undo the last action"),
+                 "id": wx.ID_UNDO,
+                 # "handler": self.on_undo
+                }, {
+                 "title": _("&Redo"),
+                 "description": _("Redo the last action"),
+                 "id": wx.ID_REDO,
+                 # "handler": self.on_redo
+                },
+                {}, {
+                 "title": _("&Copy"),
+                 "description": _("Copy selected text to the clipboard"),
+                 "id": wx.ID_COPY,
+                 # "handler": self.on_copy
+                }, {
+                 "title": _("&Cut"),
+                 "description": _("Move selected text to the clipboard"),
+                 "id": wx.ID_CUT,
+                 # "handler": self.on_cut
+                }, {
+                 "title": _("&Paste"),
+                 "description": _("Paste text from the clipboard"),
+                 "id": wx.ID_PASTE,
+                 # "handler": self.on_paste
+                },
+                {}, {
+                 "title": _("Pr&eferences"),
+                 "description": _("Open the preference dialog"),
+                 # "id": wx.ID_ANY,
+                 # "handler": self.on_paste
+                }
+            ]}, {
+             "title": _("&Appearance"),
+             "items": [
+                {}
                 ]
             }
         ]
