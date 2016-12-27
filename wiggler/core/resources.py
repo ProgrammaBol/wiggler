@@ -10,8 +10,7 @@ from wiggler.engine.events import EventQueue
 from wiggler.core.factories.templates import Template
 from wiggler.core.factories.characters import Character
 from wiggler.core.factories.ui_images import UIimage
-from wiggler.core.cast import Cast
-from wiggler.core.project import Project
+from wiggler.core.factories.projectres import ProjectRes
 from wiggler.core.datastructures import OverlayDict
 
 
@@ -45,14 +44,16 @@ class Resources(object):
         for resource_type in self.types:
             res_attr = getattr(self, resource_type)
             res_attr.switch = "both"
-        self.new_project()
-
-        # TODO: move to project
-        self.cast = Cast(self)
+        self.projectres = None
 
         # pygame resources
         self.clock = None
         self.resolution = None
+
+    def reset_overlays(self):
+        for resource_type in self.types:
+            res_attr = getattr(self, resource_type)
+            res_attr.reset_overlay()
 
     @staticmethod
     def load_metadata(base_path, filename):
@@ -79,7 +80,9 @@ class Resources(object):
                 pass
         return resource_name, resource
 
-    def scan_tree(self, base_path):
+    def scan_tree(self, base_path, reset=False):
+        if reset:
+            self.reset_overlays()
         tree_walk = {}
         for root, dirs, files in os.walk(base_path):
             tree_walk[root] = (dirs, files)
@@ -165,19 +168,28 @@ class Resources(object):
         # except IOError:
         #    pass
 
-    def new_project(self):
-        self.load_project(filename=None)
+    def create_new_project(self, project_def=None):
+        if self.projectres is not None:
+            self.projectres.cleanup()
+        self.projectres = ProjectRes()
+        project_def = self.projectres.create_new(project_def)
+        self.scan_tree(self.projectres.resources_dir, reset=True)
+        return project_def
 
     def load_project(self, filename):
-        if hasattr(self, "project"):
-            if self.project.needs_save:
-                pass
-            self.project.cleanup()
-        self.project = Project(filename=filename)
-        self.scan_tree(self.project.temp_dir)
+        if self.projectres is not None:
+            self.projectres.cleanup()
+        self.projectres = ProjectRes()
+        project_def = self.projectres.load(filename=filename)
+        self.scan_tree(self.projectres.resources_dir, reset=True)
+        return project_def
 
-    def save_project(self, filename):
-        self.project.save(filename)
+    def import_resources(self, filename):
+        ''' Merge a resources file with current resources tree'''
+        pass
+
+    def save_project(self, filename=None):
+        self.projectres.save(filename)
 
     def new_resource(self, resource_type, name, definition):
         res_dict = getattr(self, resource_type)

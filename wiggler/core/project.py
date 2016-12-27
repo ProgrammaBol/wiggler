@@ -1,57 +1,46 @@
-import os
-import yaml
-import shutil
-import tempfile
-import zipfile
 
 
 class Project(object):
 
-    def __init__(self, filename=None):
-
-        self.temp_dir = tempfile.mkdtemp(prefix="wiggler-")
-        self.def_filename = os.path.join(self.temp_dir, "project.yaml")
-        self.resources_dir = os.path.join(self.temp_dir, "resources")
-        if filename is None:
-            self.create_new()
-        else:
-            self.unpack_projectfile(filename)
-        self.load()
+    def __init__(self, resources, events, filename=None):
+        self.resources = resources
+        self.events = events
         self.needs_save = False
+        self.code_status = "undef"
+        self.active_sprite = None
+        self.stage_background = None
+        self.name = None
+        if filename is None:
+            project_def = {
+                'name': "untitled",
+                'characters': {},
+                'background': {
+                    'type': 'solid',
+                    'color': "255, 255, 255",
+                },
+            }
+            self.load(project_def=project_def)
+        else:
+            self.load(filename=filename)
 
-    def create_new(self):
-        os.mkdir(self.resources_dir)
-        project_def = {
-            'name': "untitled",
-            'characters': None,
-            'background': {
-                'type': 'solid',
-                'color': "255, 255, 255",
-            },
-        }
-        with open(self.def_filename, "w") as project_file:
-            yaml.dump(project_def, project_file)
+    def load(self, filename=None, project_def=None):
+        if self.needs_save:
+            # check if we want to save current project
+            pass
+        if project_def is not None:
+            project_def = self.resources.create_new_project(
+                project_def=project_def)
+        if filename is not None:
+            project_def = self.resources.load_project(filename)
 
-    def unpack_projectfile(self, project_filename):
-        with zipfile.ZipFile(project_filename, 'r') as project_file:
-            project_file.extractall(self.temp_dir)
+        self.name = project_def['name']
+        self.stage_background = project_def['background']
+        self.events.send('projload')
 
-    def load(self):
-        with open(self.def_filename) as project_file:
-            defs = yaml.load(project_file.read())
-        self.name = defs['name']
-        self.characters = defs['characters']
-        self.background = defs['background']
-
-    def save(self, project_filename):
-        with zipfile.ZipFile(project_filename, 'w') as project_file:
-            for root, dirs, files in os.walk(self.temp_dir):
-                rel_path = os.path.relpath(root, start=self.temp_dir)
-                project_file.write(root, rel_path)
-                for filename in files:
-                    project_file.write(
-                        os.path.join(root, filename),
-                        os.path.join(rel_path, filename))
-
-    def cleanup(self):
-        shutil.rmtree(self.temp_dir)
+    def play(self):
+        self.events.send('preplay')
+        if self.code_status == "undef":
+            self.events.send('play')
+        else:
+            # TODO: warn about errors in the code
+            pass

@@ -5,7 +5,7 @@ import wx.stc
 
 class TextEditor(wx.stc.StyledTextCtrl):
 
-    def __init__(self, parent, ID):
+    def __init__(self, parent, ID, readonly=False):
         super(TextEditor, self).__init__(parent,
                                          ID,
                                          wx.DefaultPosition,
@@ -16,31 +16,32 @@ class TextEditor(wx.stc.StyledTextCtrl):
         self.SetEdgeMode(wx.stc.STC_EDGE_BACKGROUND)
         self.SetEdgeColumn(78)
         self.Bind(wx.stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
+        self.read_only = readonly
         self.SetUpEditor()
-        self.SetReadOnly(1)
+        self.SetReadOnly(self.read_only)
+        # Error marker
+        self.MarkerDefine(1, wx.stc.STC_MARK_BACKGROUND, 'white', 'red')
+
+    def change_readonly_flag(self, readonly):
+        self.read_only = readonly
+
+    def mark_error(self, line):
+        self.MarkerAdd(line - 1, 1)
+
+    def clear_errors(self):
+        self.MarkerDeleteAll(1)
 
     def set_buffer(self, raw_code):
+        self.SetReadOnly(0)
         self.SetText(raw_code)
-        self.SetReadOnly(0)
-
-    def set_readonly_buffer(self, text):
-        self.SetReadOnly(0)
-        self.SetText(text)
-        self.SetReadOnly(1)
-
-    def SetValue(self, value):
-        # if wx.USE_UNICODE:
-        #    value = value.decode('utf_8')
-        self.SetReadOnly(0)
-        self.SetText(value)
         self.EmptyUndoBuffer()
         self.SetSavePoint()
-        self.SetReadOnly(1)
+        self.SetReadOnly(self.read_only)
 
     def Clear(self):
         self.SetReadOnly(0)
         self.ClearAll()
-        self.SetReadOnly(1)
+        self.SetReadOnly(self.read_only)
 
     def SetUpEditor(self):
         self.SetLexer(wx.stc.STC_LEX_PYTHON)
