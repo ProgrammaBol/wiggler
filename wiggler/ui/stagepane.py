@@ -45,6 +45,9 @@ class StagePane(wx.StaticBox):
         else:
             self._resized = 0
 
+    def clear(self):
+        pass
+
     def OnPaint(self, ev):
         self.Redraw()
 

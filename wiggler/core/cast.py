@@ -4,8 +4,8 @@ class Cast(object):
         self.resources = resources
         self.characters = {}
         self.indexes = {}
-        for name, definition in self.resources.characters.items():
-            self.characters[name] = definition
+        self.active_character = 0
+        self.reload()
 
     def add_character(self, name, definition):
         character = self.resources.new_resource('characters', name, definition)
@@ -15,8 +15,30 @@ class Cast(object):
     def set_index(self, name, index):
         self.indexes[index] = self.characters[name]
 
+    def reload(self):
+        self.characters = {}
+        self.active_character = 0
+        self.indexes = {}
+        for name in self.resources.characters.keys():
+            self.characters[name] = self.resources.load_resource(
+                'characters', name)
+
+    def set_active_character(self, name=None, index=None):
+        if name is not None:
+            for index in self.indexes:
+                if self.indexes[index] == self.characters[name]:
+                    break
+        if index is not None:
+            self.active_character = index
+        return self.indexes[index]
+
     def get_character(self, name=None, index=None):
+        if name is None and index is None:
+            index = self.active_character
         if name is not None:
             return self.characters[name]
         if index is not None:
-            return self.indexes[index]
+            try:
+                return self.indexes[index]
+            except KeyError:
+                return None
