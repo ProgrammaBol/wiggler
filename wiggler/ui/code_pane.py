@@ -41,7 +41,7 @@ class CodePane(wx.Notebook):
 
     def set_sprite_code_buffers(self, sprite_builder):
         self.active_sprite = sprite_builder
-        self.DeleteAllPages()
+        self.reload()
         for buffer_name, buffer_text in sprite_builder.user_code.items():
             self.set(buffer_name, buffer_text)
         text = sprite_builder.code_handler.generated_code
