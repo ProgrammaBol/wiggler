@@ -20,7 +20,8 @@ class RootWindow(wx.Frame):
         self.SetMinSize((100, 100))
         self.stage_resolution = self.resources.conf['stage_resolution']
         self.stage_pane = StagePane(
-            self, wx.ID_ANY, self.resources, size=self.stage_resolution)
+            self, wx.ID_ANY, self.resources, self.events,
+            size=self.stage_resolution)
 
         self.setup_menu()
         self.toolbar = ToolBar(self.resources, self)
@@ -88,7 +89,7 @@ class RootWindow(wx.Frame):
 
     def test_load(self, event):
         self.project.load(
-            filename="/home/gcerami/wiggler/tests/fixtures/test_project.wig")
+            filename="tests/fixtures/test_project.wig")
 
     def load(self, event):
         # FIXME get filenam from event
