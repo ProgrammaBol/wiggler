@@ -10,11 +10,12 @@ tilemap = dict()
 
 class StagePane(wx.StaticBox):
 
-    def __init__(self, parent, id, resources, **options):
+    def __init__(self, parent, id, resources, events, **options):
         wx.StaticBox.__init__(*(self, parent, id, 'SDL window'), **options)
         self.parent = parent
         self.resources = resources
         self.stage = Stage(self.resources)
+        self.events = events
 
         self._initialized = 0
         self._resized = 0
@@ -25,13 +26,22 @@ class StagePane(wx.StaticBox):
         wx.EVT_SIZE(self, self.OnSize)
         wx.EVT_IDLE(self, self.OnIdle)
         self.timer = wx.Timer(self)
+        self.events.subscribe(self, ['projload', 'play'])
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_TIMER, self.Update, self.timer)
+        self.Bind(self.events.EVT_NOTICE, self.notice_handler)
 
         self.max_fps = 25.0
         self.timespacing = 1000.0 / self.max_fps
         self.timer.Start(self.timespacing, False)
         self.default_backcolor = (255, 255, 255)
+
+    def notice_handler(self, event):
+        if event.notice == 'projload':
+            self.clear()
+        elif event.notice == 'play':
+            self.play()
+        event.Skip()
 
     def OnIdle(self, ev):
         if not self._initialized or self._resized:
@@ -46,7 +56,7 @@ class StagePane(wx.StaticBox):
             self._resized = 0
 
     def clear(self):
-        pass
+        self.stage.sweep()
 
     def OnPaint(self, ev):
         self.Redraw()

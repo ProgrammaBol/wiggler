@@ -7,6 +7,7 @@ from wiggler.engine.factories.sounds import SoundChannels, Sound
 from wiggler.engine.factories.sheets import Animation, Costume, Sheet
 from wiggler.engine.factories.sprites import Sprite
 from wiggler.engine.events import EventQueue
+from wiggler.core.cast import Cast
 from wiggler.core.factories.templates import Template
 from wiggler.core.factories.characters import Character
 from wiggler.core.factories.ui_images import UIimage
@@ -49,6 +50,7 @@ class Resources(object):
         # pygame resources
         self.clock = None
         self.resolution = None
+        self.cast = Cast(self)
 
     def reset_overlays(self):
         for resource_type in self.types:

@@ -94,7 +94,7 @@ class Stage(object):
 
     def sweep(self):
         self.elements.empty()
-        for character in self.resources.cast:
+        for character in self.resources.cast.characters.values():
             character.destroy_sprites()
 
     def update(self):
