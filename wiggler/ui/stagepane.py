@@ -83,4 +83,5 @@ class StagePane(wx.StaticBox):
         self.stage.update()
 
     def play(self):
+        self.stage.sweep()
         self.stage.populate()
