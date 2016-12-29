@@ -54,6 +54,8 @@ class CodePane(wx.Notebook):
     def save_active_buffers(self):
         new_user_code = {}
         sprite_builder = self.active_sprite
+        if sprite_builder is None:
+            return
         for buffer_name, buffer_editor in self._buffers.items():
             if buffer_name != "generated_code":
                 new_user_code[buffer_name] = buffer_editor.GetText()
