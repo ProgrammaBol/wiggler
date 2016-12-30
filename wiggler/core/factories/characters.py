@@ -22,7 +22,9 @@ class Character(pygame.sprite.Group):
 
     def build_sprites(self):
         for name, builder in self.builders.items():
-            self.add(builder.build())
+            sprite = builder.build()
+            if sprite is not None:
+                self.add(builder.build())
 
     def destroy_sprites(self):
         self.empty()
