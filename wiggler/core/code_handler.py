@@ -170,8 +170,16 @@ class CodeHandler(object):
             self.module = module
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
+            if exc_type == SyntaxError:
+                self.traceback_line = e.lineno
+            else:
+                c_prev = exc_traceback
+                c_cur = exc_traceback
+                while c_cur is not None:
+                    c_prev = c_cur
+                    c_cur = c_cur.tb_next
+                self.traceback_line = c_prev.tb_lineno
             self.traceback_message = traceback.format_exc()
-            self.traceback_line = e.lineno
             self.compile_error = True
             self.module = None
             self.find_section_line(self.traceback_line)
@@ -181,4 +189,5 @@ class CodeHandler(object):
             except Exception:
                 pass
 
-        sys.modules[self.module_name] = self.module
+        if not self.compile_error:
+            sys.modules[self.module_name] = self.module
