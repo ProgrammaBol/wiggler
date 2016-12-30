@@ -11,10 +11,13 @@ class CodePane(wx.Notebook):
         self.events = events
         self.resources = resources
         self.active_sprite = None
-        self.events.subscribe(self, ['reload', 'actsprite', 'preplay'])
+        self.events.subscribe(
+            self, ['reload', 'actsprite', 'preplay', 'projload'])
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
 
     def notice_handler(self, event):
+        if event.notice == 'reload':
+            self.reload()
         if event.notice == 'projload':
             self.reload()
         elif event.notice == 'actsprite':

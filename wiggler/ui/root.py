@@ -1,6 +1,8 @@
 import wx
 import wx.py
 
+import wiggler.ui.dialogs as dialogs
+
 from wiggler.ui.stagepane import StagePane
 from wiggler.ui.toolbar import ToolBar
 from wiggler.ui.menubar import MenuBar
@@ -42,22 +44,25 @@ class RootWindow(wx.Frame):
         self.Layout()
 
         self.events.subscribe(self, ['projnew', 'projopen', 'projsave',
-                                     'projsaveas', 'testload', 'exit'])
+                                     'projsaveas', 'testload', 'exit',
+                                     'modified'])
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
 
     def notice_handler(self, event):
         if event.notice == 'projnew':
-            pass
+            self.new_project()
         elif event.notice == 'projopen':
-            pass
+            self.open_project()
         elif event.notice == 'projsave':
-            pass
+            self.save_project()
         elif event.notice == 'projsaveas':
-            pass
+            self.save_project_as()
         elif event.notice == 'testload':
-            self.project.load(filename="tests/fixtures/test_project.wig")
+            self.project.load("tests/fixtures/test_project.wig")
+        elif event.notice == 'modified':
+            self.project.needs_save = True
         elif event.notice == 'exit':
-            self.Close(True)
+            self.close()
         event.Skip()
 
     def widget_placement(self):
@@ -96,3 +101,41 @@ class RootWindow(wx.Frame):
 
     def play(self, event):
         self.project.play()
+
+    def close(self):
+        # if self.project.needs_save:
+        if True:
+            proceed = dialogs.unsaved_warning(self)
+            if not proceed:
+                return
+        self.resources.close_project()
+        self.Close(True)
+
+    def open_project(self):
+        # if self.project.needs_save:
+        if True:
+            proceed = dialogs.unsaved_warning(self)
+            if not proceed:
+                return
+        filename = dialogs.open_project(self)
+        if filename is not None:
+            self.project.load(filename)
+
+    def save_project(self):
+        if self.project.abspath is None:
+            self.save_project_as()
+        else:
+            self.project.save(self.project.abspath)
+
+    def save_project_as(self):
+        filename = dialogs.save_project(self)
+        if filename is not None:
+            self.project.save(filename)
+
+    def new_project(self):
+        # if self.project.needs_save:
+        if True:
+            proceed = dialogs.unsaved_warning(self)
+            if not proceed:
+                return
+        self.project.new()

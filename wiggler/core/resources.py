@@ -1,18 +1,19 @@
 import os
+import copy
 import yaml
 import pkg_resources
 import pygame
 
+from wiggler.engine.events import EventQueue
 from wiggler.engine.factories.sounds import SoundChannels, Sound
 from wiggler.engine.factories.sheets import Animation, Costume, Sheet
 from wiggler.engine.factories.sprites import Sprite
-from wiggler.engine.events import EventQueue
 from wiggler.core.cast import Cast
+from wiggler.core.datastructures import OverlayDict
 from wiggler.core.factories.templates import Template
 from wiggler.core.factories.characters import Character
 from wiggler.core.factories.ui_images import UIimage
 from wiggler.core.factories.projectres import ProjectRes
-from wiggler.core.datastructures import OverlayDict
 
 
 class Resources(object):
@@ -40,11 +41,13 @@ class Resources(object):
         library_basepath = pkg_resources.resource_filename('wiggler',
                                                            "resources")
 
+        self.meta_files = OverlayDict()
         self.scan_tree(library_basepath)
         # Switch all the dicts to overlay
         for resource_type in self.types:
             res_attr = getattr(self, resource_type)
             res_attr.switch = "both"
+        self.meta_files.switch = "both"
         self.projectres = None
 
         # pygame resources
@@ -56,31 +59,30 @@ class Resources(object):
         for resource_type in self.types:
             res_attr = getattr(self, resource_type)
             res_attr.reset_overlay()
+        self.meta_files.reset_overlay()
 
-    @staticmethod
-    def load_metadata(base_path, filename):
+    def load_metadata_file(self, resource_type):
         metadata = {}
-        file_path = os.path.join(base_path, filename)
-        with open(file_path) as metadata_file:
-            try:
-                for doc in yaml.load_all(metadata_file):
-                    metadata.update(doc)
-            except yaml.ScannerError:
-                pass
-        return metadata
+        file_path = self.meta_files[resource_type]
+        try:
+            metadata_file = open(file_path)
+        except IOError:
+            return metadata
 
-    @staticmethod
-    def load_file_resource(type_path, filename, metadata=None):
-        resource = {}
-        resource['abs_path'] = os.path.join(type_path, filename)
-        resource_name, resource_ext = os.path.splitext(filename)
-        if metadata is not None:
-            resource.update(metadata)
-            try:
-                resource_name = metadata.pop('name')
-            except KeyError:
-                pass
-        return resource_name, resource
+        try:
+            for resource in yaml.safe_load_all(metadata_file):
+                if 'name' in resource:
+                    name = resource['name']
+                elif 'file' in resource:
+                    name, __ = os.path.splitext(resource['file'])
+                else:
+                    # log error: cannot find name for resource
+                    continue
+                resource['modified'] = False
+                metadata[name] = resource
+        except yaml.ScannerError:
+            pass
+        return metadata
 
     def scan_tree(self, base_path, reset=False):
         if reset:
@@ -88,65 +90,38 @@ class Resources(object):
         tree_walk = {}
         for root, dirs, files in os.walk(base_path):
             tree_walk[root] = (dirs, files)
-        avail_fileres, metadata_files = tree_walk.pop(base_path)
-        metadata_paths = {}
-        for filename in metadata_files:
-            name, ext = os.path.splitext(filename)
-            if ext == ".yaml":
-                metadata_paths[name] = filename
-        avail_metadata = metadata_paths.keys()
-        # Validation, only valid resources will be taken into consideration
-        avail_fileres = set(avail_fileres).intersection(self.types)
-        avail_metadata = set(avail_metadata).intersection(self.types)
-        self.load_metaonly_res(
-            base_path, avail_fileres, avail_metadata, metadata_paths)
-        self.load_fileonly_res(
-            base_path, tree_walk, avail_fileres, avail_metadata)
-        self.load_filemeta_res(
-            base_path, tree_walk, avail_fileres, avail_metadata,
-            metadata_paths)
+        fileres_dirs, metadata_files = tree_walk.pop(base_path)
 
-    def load_metaonly_res(self, base_path, avail_fileres, avail_metadata,
-                          metadata_paths):
-        # metadata-only resources
-        metaonly_res = avail_metadata - avail_fileres
-        for resource_type in metaonly_res:
-            metadata = self.load_metadata(
-                base_path, metadata_paths[resource_type])
+        for resource_type in self.types:
+            filename = resource_type + os.path.extsep + "yaml"
+            meta_path = os.path.join(base_path, filename)
+            self.meta_files[resource_type] = meta_path
+
             resource_attr = getattr(self, resource_type)
+            metadata = self.load_metadata_file(resource_type)
             resource_attr.update(metadata)
 
-    def load_fileonly_res(self, base_path, tree_walk, avail_fileres,
-                          avail_metadata):
-        # file only resources
-        file_only_resources = avail_fileres - avail_metadata
-        for resource_type in file_only_resources:
-            resource_attr = getattr(self, resource_type)
-            type_path = os.path.join(base_path, resource_type)
-            void, file_list = tree_walk[type_path]
-            for filename in file_list:
-                resource_name, resource = self.load_file_resource(
-                    type_path, filename)
-                resource_attr[resource_name] = resource
+        for resource_type in fileres_dirs:
+            try:
+                resource_attr = getattr(self, resource_type)
+            except AttributeError:
+                continue
 
-    def load_filemeta_res(self, base_path, tree_walk, avail_fileres,
-                          avail_metadata, metadata_paths):
-        # file resources with metadata
-        file_and_meta_res = avail_fileres.intersection(avail_metadata)
-        for resource_type in file_and_meta_res:
-            resource_attr = getattr(self, resource_type)
             type_path = os.path.join(base_path, resource_type)
-            void, file_list = tree_walk[type_path]
+            __, file_list = tree_walk[type_path]
             for filename in file_list:
-                metadata = self.load_metadata(
-                    base_path, metadata_paths[resource_type])
-                try:
-                    resource_metadata = metadata[filename]
-                except KeyError:
-                    resource_metadata = None
-                resource_name, resource = self.load_file_resource(
-                    type_path, filename, metadata=resource_metadata)
-                resource_attr[resource_name] = resource
+                name = None
+                for resource_name, resource in resource_attr.items():
+                    if resource.get('file', None) == filename:
+                        name = resource_name
+                        break
+                if name is None:
+                    name, __ = os.path.splitext(filename)
+                    resource_attr[name] = {}
+
+                abs_path = os.path.join(type_path, filename)
+                resource_attr[name]['abs_path'] = abs_path
+                resource_attr[name]['modified'] = False
 
     def set_pygame_resources(self):
         self.resolution = self.conf['stage_resolution']
@@ -186,12 +161,19 @@ class Resources(object):
         self.scan_tree(self.projectres.resources_dir, reset=True)
         return project_def
 
+    def close_project(self):
+        if self.projectres is not None:
+            self.projectres.cleanup()
+
     def import_resources(self, filename):
         ''' Merge a resources file with current resources tree'''
         pass
 
-    def save_project(self, filename=None):
-        self.projectres.save(filename)
+    def save_project(self, filename):
+        if self.projectres is not None:
+            for resource_type in self.types:
+                self.save_resources(resource_type, save_all=True)
+            self.projectres.save(filename)
 
     def new_resource(self, resource_type, name, definition):
         res_dict = getattr(self, resource_type)
@@ -200,7 +182,7 @@ class Resources(object):
             filename = definition.pop('filename')
             data = definition.pop('data')
             definition['abs_path'] = os.path.join(
-                self.project.temp_dir, resource_type, filename)
+                self.projectres.temp_dir, resource_type, filename)
             filename = definition['abs_path']
             with open(filename, "w") as resource_file:
                 resource_file.write(data)
@@ -211,31 +193,54 @@ class Resources(object):
         resource = self.load_resource(resource_type, name)
         return resource
 
-    def save_resource(self, res_type, definition):
-        try:
-            filename = definition.pop('abs_path')
-            data = definition.pop('data')
-            with open(filename, "w") as resource_file:
-                resource_file.write(data)
-        except KeyError:
-            pass
+    def save_resources(self, resource_type, name=None, save_all=False):
+        save_data = []
 
-        # This part should rewrite metadata file
-        # res_dict = getattr(self, resource_type)
-        # save_data = []
-        # for resource_name, resource_definition in res_dict.items():
-        #    metadata_filename = resource_type + os.extsep + "yaml"
-        #    metadata_path = os.path.join(
-        #        self.project.temp_dir, resource_type, metadata_filename)
-        #    if meta_only is True:
-        #        resource_data = {resource_name: resource_definition}
-        #    else:
-        #        resource_filename = os.path.basename(
-        #            resource_definition['abs_path'])
-        #        resource_data = {
-        #            resource_filename: resource_definition}
-        #    save_data.append(resource_data)
-        # yaml.dump_all(save_data, metadata_path)
+        if save_all:
+            resource_attr = getattr(self, resource_type)
+            for name, definition in resource_attr.items():
+                resource_def = self.save_resource_file(resource_type, name)
+                if resource_def:
+                    save_data.append(resource_def)
+        elif name is not None:
+            resource_type_metadata = self.load_metadata_file(resource_type)
+            resource_def = self.save_resource_file(resource_type, name)
+            if resource_def:
+                resource_type_metadata[name] = resource_def
+            for name, definition in resource_type_metadata.items():
+                save_data.append(definition)
+
+        if save_data:
+            metadata_path = self.meta_files[resource_type]
+            with open(metadata_path, "w") as metadata_file:
+                yaml.safe_dump_all(
+                    save_data, metadata_file, indent=4,
+                    default_flow_style=False)
+
+    def save_resource_file(self, resource_type, name,):
+        resource_attr = getattr(self, resource_type)
+        definition = copy.copy(resource_attr[name])
+        if not definition.pop('modified'):
+            return {}
+        abs_path = None
+        if 'abs_path' in definition:
+            abs_path = definition.pop('abs_path')
+            try:
+                data = definition.pop('data')
+                with open(abs_path, "w") as resource_file:
+                    resource_file.write(data)
+            except KeyError:
+                pass
+
+            fileres_filename = os.path.basename(abs_path)
+            fileres_defaultname, __ = os.path.splitext(fileres_filename)
+            if name != fileres_defaultname:
+                # the file resource has a been assigned a name different
+                # from the default name from filename
+                # we need to report it into metadata
+                definition['name'] = name
+
+        return definition
 
     def load_resource(self, resource_type, resource_name):
         resource_def = getattr(self, resource_type)[resource_name]

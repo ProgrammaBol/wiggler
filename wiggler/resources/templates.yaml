@@ -1,3 +1,4 @@
-basic.j2:
-    name: basic
-    self_sufficiency: 0
+---
+file: basic.j2
+name: basic
+self_sufficiency: 0

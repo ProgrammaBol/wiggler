@@ -1,8 +1,8 @@
 ---
-ship_idle:
-    sheet: master.png
-    rect: 481, 403, 29, 29
+name: ship_idle
+sheet: master.png
+rect: 481, 403, 29, 29
 ---
-ship_thrusting:
-    sheet: master.png
-    rect: 481, 358, 29, 29
+name: ship_thrusting
+sheet: master.png
+rect: 481, 358, 29, 29

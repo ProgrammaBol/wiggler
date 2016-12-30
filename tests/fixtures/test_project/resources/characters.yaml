@@ -1,4 +1,4 @@
 ---
-player1:
-    sprites:
-        - ship
+name: player1
+sprites:
+    - ship

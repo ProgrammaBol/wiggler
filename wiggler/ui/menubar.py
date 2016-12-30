@@ -56,7 +56,7 @@ class MenuBar(wx.MenuBar):
         self.menu_items = {
             wx.ID_NEW: ("&New project", "Create a new project", "projnew"),
             wx.ID_OPEN: ("&Load project", "Load a project from disk",
-                         "projload"),
+                         "projopen"),
             wx.ID_SAVE: ("&Save project", "Save a project to disk",
                          "projsave"),
             wx.ID_SAVEAS: ("&Duplicate project",

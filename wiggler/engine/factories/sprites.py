@@ -7,6 +7,7 @@ class Sprite(object):
     def __init__(self, resources, name, definition):
         self.resources = resources
         self.name = name
+        self.definition = definition
         self.base_class = definition['base_class']
         self.costumes = CostumesSet(resources, definition['costumes'])
         self.animations = AnimationsSet(resources, definition['animations'])
@@ -24,6 +25,7 @@ class Sprite(object):
             self.resources, self.name, self.user_code, self.sufficiency_level)
 
     def update_user_code(self, user_code):
+        self.definition['user_code'] = user_code
         self.user_code = user_code
         self.code_handler.update_user_code(self.user_code)
 
