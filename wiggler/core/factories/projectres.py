@@ -42,4 +42,4 @@ class ProjectRes(object):
                         os.path.join(rel_path, name))
 
     def cleanup(self):
-        shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
