@@ -4,17 +4,15 @@ import pygame
 class EventQueue(object):
 
     def __init__(self):
-        self.subs = dict()
-        self.subs["keyboard"] = dict()
-        self.events = []
+        self.subs = {}
+        # custom event types map
+        self.e_types = {}
 
-    def subscribe(self, source, e_type, e_id, callback, lock=False):
-        if e_type not in self.subs[source]:
-            self.subs[source][e_type] = dict()
-        if e_id not in self.subs[source][e_type]:
-            self.subs[source][e_type][e_id] = []
-        event = self.subs[source][e_type][e_id]
-        event.append(callback)
+    def subscribe(self, source, events):
+        for e_type in events:
+            if e_type not in self.subs:
+                self.subs[e_type] = pygame.sprite.Group()
+            self.subs[e_type].add(source)
 
     def unsubscribe(self, source, e_type, e_id, callback):
         try:
@@ -23,19 +21,15 @@ class EventQueue(object):
         except KeyError:
             pass
 
-    def handle_events(self):
-        while self.events:
-            event = self.events.pop()
-            if event.type == pygame.QUIT:
-                return False
-            try:
-                callbacks = self.subs["keyboard"][event.type][event.key]
-                for handler in callbacks:
-                    handler(event)
-            except KeyError:
-                pass
-        return True
+    def post(self, e_type, **data):
+        event = pygame.event.Event(e_type, data)
+        pygame.event.post(event)
 
     def update(self):
         for event in pygame.event.get():
-            self.events.append(event)
+            try:
+                spritegroup = self.subs[event.type]
+            except KeyError:
+                continue
+            for sprite in spritegroup.sprites():
+                sprite.add_event(event)

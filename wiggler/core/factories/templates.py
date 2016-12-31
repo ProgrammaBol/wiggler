@@ -4,7 +4,7 @@ import os
 
 class Template(object):
 
-    def __init__(self, name, resources, definition):
+    def __init__(self, name, resources, definition, **params):
         self.resources = resources
         self.name = name
         path, filename = os.path.split(definition['abs_path'])

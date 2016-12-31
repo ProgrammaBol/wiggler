@@ -12,7 +12,7 @@ class StaticSprite(pygame.sprite.Sprite):
     defines a sprite that will not move relatively to the map
     '''
 
-    def __init__(self, resources, initdata, *group):
+    def __init__(self, resources, events, initdata, *group):
         super(StaticSprite, self).__init__(*group)
         self.resources = resources
         self.centerx = initdata.get('centerx', 0)
@@ -41,6 +41,15 @@ class StaticSprite(pygame.sprite.Sprite):
         else:
             self.centerx = initdata.get('centerx', self.center.x)
             self.centery = initdata.get('centery', self.center.y)
+        self.events_subs = []
+        self.events = []
+
+    def add_event(self, event):
+        self.events.append(event)
+
+    def events_handler(self):
+        # defaul implementation is just clear the events
+        self.events = []
 
     def set_random_position(self, ranges):
         centerx_min = ranges.get('centerx_min', None)
@@ -111,9 +120,10 @@ class StaticSprite(pygame.sprite.Sprite):
 
 class MovingSprite(StaticSprite):
 
-    def __init__(self, resources, initdata, *group):
+    def __init__(self, resources, events, initdata, *group):
         super(MovingSprite, self).__init__(
             resources,
+            events,
             initdata,
             *group
         )

@@ -3,7 +3,7 @@ import wx
 
 class UIimage(object):
 
-    def __init__(self, resources, name, definition):
+    def __init__(self, resources, name, definition, **params):
         self.name = name
         bitmap = wx.Bitmap(definition['abs_path'])
         self.image = wx.ImageFromBitmap(bitmap)

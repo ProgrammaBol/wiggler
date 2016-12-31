@@ -26,7 +26,7 @@ from wiggler.engine.exceptions import ResourceError
 
 class Sheet(object):
 
-    def __init__(self, resources, name, definition):
+    def __init__(self, resources, name, definition, **params):
         self.name = name
         filename = definition['abs_path']
         surface_raw = pygame.image.load(filename)
@@ -46,7 +46,7 @@ class Sheet(object):
 
 class Costume(object):
 
-    def __init__(self, resources, name, definition):
+    def __init__(self, resources, name, definition, **params):
         self.name = name
         sheet = resources.load_sheet_by_filename(definition['sheet'])
         rect = tuple(map(int, definition['rect'].split(',')))
@@ -75,7 +75,7 @@ class Costume(object):
 
 class Animation(object):
 
-    def __init__(self, resources, name, definition):
+    def __init__(self, resources, name, definition, **params):
         self.name = name
         self.sound = None
         try:

@@ -26,10 +26,11 @@ class SoundChannels(object):
 
 class Sound(object):
 
-    def __init__(self, resources, definition):
+    def __init__(self, resources, name, definition, **params):
         filename = definition['abs_path']
         self.content = pygame.mixer.Sound(filename)
         self.channel = None
+        self.name = name
         self.channels = resources.sound_channels
 
     def loop_play(self):

@@ -3,7 +3,7 @@ import pygame
 
 class Character(pygame.sprite.Group):
 
-    def __init__(self, resources, name, definition):
+    def __init__(self, resources, name, definition, **params):
         super(Character, self).__init__()
         self.name = name
         self.resources = resources
