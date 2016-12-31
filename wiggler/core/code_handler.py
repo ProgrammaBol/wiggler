@@ -11,12 +11,14 @@ END = 1
 
 class CodeSection(object):
 
-    def __init__(self, code, offsets):
+    def __init__(self, code, offsets, deloopify=True):
         self.yield_inserted_lines = []
         self.original_code = code
-        self.mangled_code = ''
+        self.mangled_code = code
         self.offsets = offsets
-        self.deloopify()
+        self.deloopify = deloopify
+        if self.deloopify:
+            self.deloopify()
         self.mangled_size = len(self.mangled_code.splitlines())
         self.offsets = (
             self.offsets[START], self.offsets[START] + self.mangled_size)
@@ -146,10 +148,21 @@ class CodeHandler(object):
         self.compile_error = False
         mangled_user_code = {}
 
-        for section, code in self.user_code.items():
-            offsets = (self.template.section_offset[section],)
-            self.sections[section] = CodeSection(code, offsets)
-            mangled_user_code[section] = self.sections[section].mangled_code
+        sections = self.sufficiency.get_buffers_list()
+        for section_name, options in sections.items():
+            try:
+                code = self.user_code[section_name]
+            except KeyError:
+                continue
+            offsets = (self.template.section_offset[section_name],)
+            try:
+                deloopify = options['deloopify']
+            except KeyError:
+                deloopify = True
+            self.sections[section_name] = CodeSection(code, offsets,
+                                                      deloopify=deloopify)
+            mangled_user_code[section_name] = \
+                self.sections[section_name].mangled_code
         # adjust offsets for all the successive sections
         for section in self.sections.values():
             start_offset = section.offsets[START]

@@ -45,7 +45,17 @@ class CodePane(wx.Notebook):
     def set_sprite_code_buffers(self, sprite_builder):
         self.active_sprite = sprite_builder
         self.reload()
-        for buffer_name, buffer_text in sprite_builder.user_code.items():
+        # FIXME: this starts to look like java, find a better way to get
+        # to this list
+        buffers = \
+            sprite_builder.code_handler.sufficiency.get_buffers_list()
+        for buffer_name in buffers:
+            try:
+                buffer_text = sprite_builder.user_code[buffer_name]
+            except KeyError:
+                # FIXME: find a better place to fill a
+                # missing user_code section
+                buffer_text = sprite_builder.user_code[buffer_name] = ''
             self.set(buffer_name, buffer_text)
         text = sprite_builder.code_handler.generated_code
         self.set("generated_code", text, readonly=True)
