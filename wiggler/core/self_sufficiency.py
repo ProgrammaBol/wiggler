@@ -11,6 +11,20 @@ metadata files tabs)
 6: sprite base classes removed
 '''
 
+level_0 = {
+    '__init__': {
+        'deloopify': False
+    }
+}
+
+level_1 = {
+    '__init__': {
+        'deloopify': False
+
+    },
+    'custom_update': {}
+}
+
 
 class SelfSufficiency(object):
 
@@ -22,8 +36,8 @@ class SelfSufficiency(object):
             self.templates[template_def['self_sufficiency']] = template
         self.level = initial_level
         self.buffers_lists = [
-            ['__init__'],  # level 0
-            ['custom_update'],  # level 1
+            level_0,
+            level_1,
         ]
 
     def set_level(self, level):
