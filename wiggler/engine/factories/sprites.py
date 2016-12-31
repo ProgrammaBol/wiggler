@@ -2,9 +2,9 @@ from wiggler.engine.sets import CostumesSet, AnimationsSet, SoundsSet
 from wiggler.core.code_handler import CodeHandler
 
 
-class Sprite(object):
+class SpriteBuilder(object):
 
-    def __init__(self, resources, name, definition):
+    def __init__(self, resources, name, definition, **params):
         self.resources = resources
         self.name = name
         self.definition = definition
@@ -23,6 +23,7 @@ class Sprite(object):
         self.init_data.update(additional_initdata)
         self.code_handler = CodeHandler(
             self.resources, self.name, self.user_code, self.sufficiency_level)
+        self.events = params['events']
 
     def update_user_code(self, user_code):
         self.definition['user_code'] = user_code
@@ -43,5 +44,5 @@ class Sprite(object):
         sprite = None
         if self.code_handler.module is not None:
             sprite = self.code_handler.module.Sprite(
-                self.resources, self.init_data)
+                self.resources, self.events, self.init_data)
         return sprite

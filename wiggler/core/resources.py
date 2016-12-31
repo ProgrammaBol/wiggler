@@ -7,7 +7,7 @@ import pygame
 from wiggler.engine.events import EventQueue
 from wiggler.engine.factories.sounds import SoundChannels, Sound
 from wiggler.engine.factories.sheets import Animation, Costume, Sheet
-from wiggler.engine.factories.sprites import Sprite
+from wiggler.engine.factories.sprites import SpriteBuilder
 from wiggler.core.cast import Cast
 from wiggler.core.datastructures import OverlayDict
 from wiggler.core.factories.templates import Template
@@ -27,7 +27,7 @@ class Resources(object):
         self.factories['costumes'] = Costume
         self.factories['animations'] = Animation
         self.factories['characters'] = Character
-        self.factories['sprites'] = Sprite
+        self.factories['sprites'] = SpriteBuilder
         self.factories['templates'] = Template
         self.factories['ui_images'] = UIimage
 
@@ -54,6 +54,7 @@ class Resources(object):
         self.clock = None
         self.resolution = None
         self.cast = Cast(self)
+        self.engine_events = None
 
     def reset_overlays(self):
         for resource_type in self.types:
@@ -129,7 +130,7 @@ class Resources(object):
         reserved_channels = self.conf['reserved_channels']
         self.sound_channels = SoundChannels(sound_channels, reserved_channels)
         self.clock = pygame.time.Clock()
-        self.events = EventQueue()
+        self.engine_events = EventQueue()
 
     def load_conf(self):
         self.conf = {
@@ -245,7 +246,8 @@ class Resources(object):
     def load_resource(self, resource_type, resource_name):
         resource_def = getattr(self, resource_type)[resource_name]
         factory = self.factories[resource_type]
-        instance = factory(self, resource_name, resource_def)
+        instance = factory(self, resource_name, resource_def,
+                           events=self.engine_events)
         return instance
 
     def remove_resource(self, resource_type, name):

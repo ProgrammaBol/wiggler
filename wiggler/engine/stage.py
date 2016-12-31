@@ -98,7 +98,7 @@ class Stage(object):
             character.destroy_sprites()
 
     def update(self):
-        self.resources.events.update()
+        self.resources.engine_events.update()
         self.resources.clock.tick()
         self.screen.fill((255, 255, 255))
         # pygame.draw.circle(self.screen, (250, 0, 0), (100, 100), 50)
