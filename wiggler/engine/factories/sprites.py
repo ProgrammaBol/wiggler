@@ -1,6 +1,15 @@
 from wiggler.engine.sets import CostumesSet, AnimationsSet, SoundsSet
 from wiggler.core.code_handler import CodeHandler
 
+def_fields = {
+    'base_class': {},
+    'costumes': {},
+    'animations': {},
+    'sounds': {},
+    'sufficiency_level': {},
+    'user_code': {},
+}
+
 
 class SpriteBuilder(object):
 

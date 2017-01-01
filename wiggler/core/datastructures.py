@@ -26,6 +26,12 @@ class OverlayDict(object):
             return True
         return False
 
+    def __nonzero__(self):
+        if self.switch == "both" or self.switch == "overlay":
+            return bool(self.overlay)
+        else:
+            return bool(self.base)
+
     def __repr__(self):
         d = {}
         for k, v in self.items():
