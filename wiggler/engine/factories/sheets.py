@@ -24,6 +24,11 @@ import pygame
 from wiggler.engine.exceptions import ResourceError
 
 
+sheet_def_fields = {
+    'colorkey': {}
+}
+
+
 class Sheet(object):
 
     def __init__(self, resources, name, definition, **params):
@@ -42,6 +47,12 @@ class Sheet(object):
 
     def get_area(self, rect):
         return self.surface.subsurface(rect).copy()
+
+
+costume_def_fields = {
+    'sheet': {},
+    'rect': {},
+}
 
 
 class Costume(object):
@@ -71,6 +82,14 @@ class Costume(object):
             return rotated_image, rotated_image.get_rect()
         else:
             return self.surface, self.rect
+
+
+animation_def_fields = {
+    'sound': {},
+    'equal_time': {},
+    'total_duration': {},
+    'sequence': {},
+}
 
 
 class Animation(object):

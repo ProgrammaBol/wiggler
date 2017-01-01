@@ -3,6 +3,7 @@ import copy
 import yaml
 import pkg_resources
 import pygame
+import shutil
 
 from wiggler.engine.events import EventQueue
 from wiggler.engine.factories.sounds import SoundChannels, Sound
@@ -176,52 +177,134 @@ class Resources(object):
                 self.save_resources(resource_type, save_all=True)
             self.projectres.save(filename)
 
-    def new_resource(self, resource_type, name, definition):
+    def add_resource(self, resource_type, name, definition,
+                     source_file=None):
         res_dict = getattr(self, resource_type)
-
-        try:
-            filename = definition.pop('filename')
-            data = definition.pop('data')
-            definition['abs_path'] = os.path.join(
-                self.projectres.temp_dir, resource_type, filename)
-            filename = definition['abs_path']
-            with open(filename, "w") as resource_file:
-                resource_file.write(data)
-        except KeyError:
-            pass
+        if source_file is not None:
+            __, ext = os.path.splitext(source_file)
+            res_dir = os.path.join(self.projectres.resources_dir,
+                                   resource_type, "")
+            try:
+                os.mkdir(res_dir)
+            except OSError:
+                pass
+            definition['abs_path'] = res_dir + name + ext
+            definition['file'] = name + ext
+            shutil.copy(source_file, definition['abs_path'])
         res_dict[name] = definition
+
+        self.save_resources(resource_type, name=name, save_all=False)
 
         resource = self.load_resource(resource_type, name)
         return resource
 
+    def find_deps(self, resource_type, name):
+        # hard deps
+        # costumes -> sheets
+        # animations -> sheets
+        # soft_deps
+        # character -> sprites
+        # sprite -> costumes
+        # sprite -> sounds
+        # sprite -> animations
+        hard_deps = set()
+        soft_deps = set()
+        if resource_type == 'sheets':
+            abs_path = getattr(self, 'sheets')[name]['abs_path']
+            sheet_file = os.path.basename(abs_path)
+            for costume_name, costume_def in getattr(self, 'costumes').items():
+                if costume_def['sheet'] == sheet_file:
+                    hard_deps.update(set([('costumes', costume_name)]))
+                    hard, soft = self.find_deps('costumes', costume_name)
+                    hard_deps.update(hard)
+                    soft_deps.update(soft)
+            animations = getattr(self, 'animations').items()
+            for animation_name, animation_def in animations:
+                if animation_def['sheet'] == sheet_file:
+                    hard_deps.update(set([('animations', animation_name)]))
+                    hard, soft = self.find_deps('animations', animation_name)
+                    hard_deps.update(hard)
+                    soft_deps.update(soft)
+        elif resource_type == 'costumes':
+            for sprite_name, sprite_def in getattr(self, 'sprites').items():
+                if name in sprite_def['costumes']:
+                    soft_deps.update(set([('sprites', name)]))
+                    __, soft = self.find_deps('sprites', sprite_name)
+                    soft_deps.update(soft)
+        elif resource_type == 'sounds':
+            for sprite_name, sprite_def in getattr(self, 'sprites').items():
+                if name in sprite_def['sounds']:
+                    soft_deps.update(set([('sprites', name)]))
+                    __, soft = self.find_deps('sprites', sprite_name)
+                    soft_deps.update(soft)
+        elif resource_type == 'animations':
+            for sprite_name, sprite_def in getattr(self, 'sprites').items():
+                if name in sprite_def['animations']:
+                    soft_deps.update(set([('sprites', name)]))
+                    __, soft = self.find_deps('sprites', sprite_name)
+                    soft_deps.update(soft)
+        elif resource_type == 'sprites':
+            for character_name, character_def in \
+                    getattr(self, 'characters').items():
+                if name in character_def['sprites']:
+                    soft_deps.update(set([('sprites', name)]))
+
+        return list(hard_deps), list(soft_deps)
+
+    def remove_resource(self, resource_type, name):
+        res_dict = getattr(self, resource_type)
+        definition = res_dict[name]
+        if not res_dict.is_overlay(name):
+            # library resources cannot be removed
+            return
+        try:
+            os.unlink(definition['abs_path'])
+        except KeyError:
+            pass
+        resource_type_metadata = self.load_metadata_file(resource_type)
+        del resource_type_metadata[name]
+        self.save_metadata(resource_type, resource_type_metadata)
+        del res_dict[name]
+        if not res_dict:
+            res_dir = os.path.join(self.projectres.resources_dir,
+                                   resource_type, "")
+            os.rmdir(res_dir)
+
     def save_resources(self, resource_type, name=None, save_all=False):
-        save_data = []
+        resource_type_metadata = {}
 
         if save_all:
             resource_attr = getattr(self, resource_type)
-            for name, definition in resource_attr.items():
+            for name, __ in resource_attr.items():
                 resource_def = self.save_resource_file(resource_type, name)
                 if resource_def:
-                    save_data.append(resource_def)
+                    resource_type_metadata[name] = resource_def
         elif name is not None:
             resource_type_metadata = self.load_metadata_file(resource_type)
             resource_def = self.save_resource_file(resource_type, name)
             if resource_def:
                 resource_type_metadata[name] = resource_def
-            for name, definition in resource_type_metadata.items():
-                save_data.append(definition)
 
+        if resource_type_metadata:
+            self.save_metadata(resource_type, resource_type_metadata)
+
+    def save_metadata(self, resource_type, resource_type_metadata):
+        save_data = []
+        for __, definition in resource_type_metadata.items():
+            save_data.append(definition)
+        metadata_path = self.meta_files[resource_type]
         if save_data:
-            metadata_path = self.meta_files[resource_type]
             with open(metadata_path, "w") as metadata_file:
                 yaml.safe_dump_all(
                     save_data, metadata_file, indent=4,
                     default_flow_style=False)
+        else:
+            os.unlink(metadata_path)
 
-    def save_resource_file(self, resource_type, name,):
+    def save_resource_file(self, resource_type, name):
         resource_attr = getattr(self, resource_type)
         definition = copy.copy(resource_attr[name])
-        if not definition.pop('modified'):
+        if 'modified' not in definition or not definition.pop('modified'):
             return {}
         abs_path = None
         if 'abs_path' in definition:
@@ -249,10 +332,6 @@ class Resources(object):
         instance = factory(self, resource_name, resource_def,
                            events=self.engine_events)
         return instance
-
-    def remove_resource(self, resource_type, name):
-        res_dict = getattr(self, resource_type)
-        del res_dict[name]
 
     def load_ui_images(self, ui_image_name):
         return self.load_resource('ui_images', ui_image_name)

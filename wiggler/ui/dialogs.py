@@ -25,3 +25,12 @@ def save_project(parent):
     if save_file.ShowModal() == wx.ID_CANCEL:
         return None
     return save_file.GetPath()
+
+
+def open_sheet(parent):
+    options = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_PREVIEW
+    open_file = wx.FileDialog(parent, "Select sheet file", "", "",
+                              "", options)
+    if open_file.ShowModal() == wx.ID_CANCEL:
+        return None
+    return open_file.GetPath()

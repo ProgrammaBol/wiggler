@@ -3,8 +3,8 @@ name: ship
 costumes:
     - 'ship_idle'
     - 'ship_thrusting'
-sounds: null
-animations:
+sounds: []
+animations: []
 self_sufficiency: 0
 user_code:
     __init__: |

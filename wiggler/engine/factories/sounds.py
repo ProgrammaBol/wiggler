@@ -1,5 +1,7 @@
 import pygame
 
+def_fields = {}
+
 
 class SoundChannels(object):
 
