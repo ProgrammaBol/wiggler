@@ -58,6 +58,13 @@ class ToolBar(object):
             self.resources.add_resource('sheets', definition['name'],
                                         definition, source_file=filename)
 
+
+        dlg = MyDialog()
+        res = dlg.ShowModal()
+        if res == wx.ID_OK:
+            print dlg.comboBox1.GetValue()
+        dlg.Destroy()
+
     def del_sheet(self, event):
         # LISTCTR with very large icons ?
         # use resources.find_deps
