@@ -23,7 +23,8 @@ setup(
     keywords='scratch pygame',
     packages=find_packages(),
     package_data={
-        'wiggler': ['resources/*/*'],
+        'wiggler': ['resources/*/*',
+                    'resources/*.yaml'],
     },
     entry_points={
         'console_scripts': [
