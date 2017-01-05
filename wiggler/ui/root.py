@@ -49,7 +49,7 @@ class RootWindow(wx.Frame):
 
         self.events.subscribe(self, ['projnew', 'projopen', 'projsave',
                                      'projsaveas', 'testload', 'exit',
-                                     'modified'])
+                                     'modified', 'addcostume'])
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
 
     def notice_handler(self, event):
@@ -67,10 +67,12 @@ class RootWindow(wx.Frame):
             self.project.needs_save = True
         elif event.notice == 'exit':
             self.close()
+        elif event.notice == 'addcostume':
+            self.add_costume(event)
         event.Skip()
 
     def widget_placement(self):
-        sizer = wx.GridBagSizer()
+        sizer = wx.GridBagSizer(hgap=1, vgap=1)
         sizer.Add(self.stage_pane, (0, 0))
         sizer.Add(self.basket_classes, (0, 1), span=(1, 1))
         sizer.Add(self.basket_functions, (1, 1), span=(1, 1), flag=wx.EXPAND)
@@ -85,12 +87,14 @@ class RootWindow(wx.Frame):
     def setup_basket_members(self):
         self.basket_functions = wx.ListCtrl(
             self, wx.ID_ANY, size=(200, 400), style=wx.LC_REPORT)
-        self.basket_functions.InsertColumn(0, "Available attributes")
+        self.basket_functions.InsertColumn(0, "Available attributes",
+                                           width=wx.LIST_AUTOSIZE_USEHEADER)
 
     def setup_basket_classes(self):
         self.basket_classes = wx.ListCtrl(
             self, wx.ID_ANY, size=(200, 400), style=wx.LC_REPORT)
-        self.basket_classes.InsertColumn(0, "Available Classes")
+        self.basket_classes.InsertColumn(0, "Available Classes",
+                                         width=wx.LIST_AUTOSIZE_USEHEADER)
         self.basket_classes.InsertStringItem(0, "MovingSprite")
         self.basket_classes.InsertStringItem(1, "StaticSprite")
 
@@ -136,3 +140,6 @@ class RootWindow(wx.Frame):
             if not proceed:
                 return
         self.project.new()
+
+    def add_costume(self, event):
+        self.toolbar.add_costume(event)

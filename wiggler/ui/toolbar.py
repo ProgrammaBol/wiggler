@@ -18,7 +18,7 @@ class ToolBar(object):
         self.add_button('decss', 'decss', self.decss)
         self.add_button('incss', 'add sheet', self.add_sheet)
         self.add_button('decss', 'del sheet', self.del_sheet)
-        self.add_button('incss', 'add costume', self.decss)
+        self.add_button('incss', 'add costume', self.add_costume)
         self.add_button('incss', 'add sprite', self.decss)
         self.add_button('incss', 'add character', self.decss)
         self.tools.Realize()
@@ -58,7 +58,6 @@ class ToolBar(object):
             self.resources.add_resource('sheets', definition['name'],
                                         definition, source_file=filename)
 
-
         dlg = MyDialog()
         res = dlg.ShowModal()
         if res == wx.ID_OK:
@@ -76,6 +75,23 @@ class ToolBar(object):
 
     def add_costume(self, event):
         # dialog with definitions and a area selection on the sheet
+        dia = dialogs.ResourceDialog(None, -1, "Add costume")
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            # print self.settings['name'], self.settings['rect'], \
+            # self.settings['sheet']
+            try:
+                out = self.resources.add_resource(
+                    'costumes', self.settings['name'],
+                    {'name': self.settings['name'],
+                     'sheet': self.settings['sheet'],
+                     'rect': self.settings['rect']})
+            except ValueError, e:
+                wx.MessageBox(str(e), "Error",
+                              wx.OK | wx.ICON_INFORMATION)
+        dia.Destroy()
+        return True
         pass
 
     def del_costume(self, event):

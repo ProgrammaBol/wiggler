@@ -71,6 +71,7 @@ class MenuBar(wx.MenuBar):
            Arguments:
                parent - a wx.Frame object containing the menu bar
         """
+        ID_ADD_COSTUMES = wx.Window.NewControlId()
         wx.MenuBar.__init__(self, wx.ID_ANY)
         self.events = events
         self.menu_items = {
@@ -151,6 +152,8 @@ class MenuBar(wx.MenuBar):
             ID_CHANGE_BACKGROUND: ('Change default background',
                                    'Change default background for the project',
                                    'change_background'),
+            ID_ADD_COSTUMES: ("Add Costume", "Define a new costume on a sheet",
+                              'addcostume'),
         }
         self.menu = OrderedDict()
         self.menu["&File"] = [
@@ -204,7 +207,9 @@ class MenuBar(wx.MenuBar):
             ID_DEL_TEXT,
             wx.ID_SEPARATOR,
         ]
-        self.menu["&Appearance"] = []
+        self.menu["&Appearance"] = [
+            ID_ADD_COSTUMES,
+        ]
 
         for name, item_list in self.menu.items():
             current = wx.Menu()

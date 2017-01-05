@@ -1,4 +1,5 @@
 import wx
+from wiggler.core.resources import Resources
 
 
 def unsaved_warning(parent):
@@ -46,49 +47,65 @@ class SelectSheet(wx.ListCtrl):
 
 class ResourceDialog(wx.Dialog):
 
-    def __init__(self, *args, **kw):
-        super(SelectSheet, self).__init__(*args, **kw)
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 380))
+        self.settings = {}
 
-        self.InitUI()
-        self.SetSize((250, 200))
-        self.SetTitle("Select sheet")
+        wx.StaticText(self, -1, 'Select source sheet file:', (5, 5))
+        self.lc = wx.ListCtrl(self, -1, pos=(5, 25), size=(284, 150),
+                              style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        self.resources = Resources()
+        self.lc.InsertColumn(0, 'Sheet file')
+        self.lc.SetColumnWidth(0, 267)
+        for sheetname in self.resources.sheets.keys():
+            num_items = self.lc.GetItemCount()
+            self.lc.InsertStringItem(num_items, sheetname)
 
-    def InitUI(self):
-        pnl = wx.Panel(self)
-        vbox = wx.BoxSizer(wx.VERTICAL)
+        wx.StaticText(self, -1, 'Insert costume name:', (20, 190))
+        self.name = wx.TextCtrl(self, -1, '', (160, 187))
 
-        sb = wx.StaticBox(pnl, label='Sheets')
-        sbs = wx.StaticBoxSizer(sb, orient=wx.VERTICAL)
-        sbs.Add(wx.ListCtrl())
+        wx.StaticBox(self, -1, 'Define costume RECT', (5, 227), size=(284, 90))
+        wx.StaticText(self, -1, 'Origin point:', (15, 253))
+        wx.StaticText(self, -1, 'X:', (136, 253))
+        self.originx = wx.SpinCtrl(self, -1, '0', (150, 250), (55, -1), min=0,
+                                   max=4000)
+        wx.StaticText(self, -1, 'Y:', (216, 253))
+        self.originy = wx.SpinCtrl(self, -1, '0', (230, 250), (55, -1), min=0,
+                                   max=4000)
 
-        # --- resource options ---
-        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(wx.RadioButton(pnl, label='name'))
-        hbox1.Add(wx.TextCtrl(pnl), flag=wx.LEFT, border=5)
-        sbs.Add(hbox1)
+        wx.StaticText(self, -1, 'Side size:', (15, 283))
+        wx.StaticText(self, -1, 'X:', (136, 283))
+        self.sidex = wx.SpinCtrl(self, -1, '0', (150, 280), (55, -1), min=0,
+                                 max=4000)
+        wx.StaticText(self, -1, 'Y:', (216, 283))
+        self.sidey = wx.SpinCtrl(self, -1, '0', (230, 280), (55, -1), min=0,
+                                 max=4000)
 
-        pnl.SetSizer(sbs)
+        self.button_ok = wx.Button(self, 1, 'Ok', (170, 320), (60, -1))
+        self.button_cancel = wx.Button(self, 2, 'Cancel', (230, 320), (60, -1))
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
 
-        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        okButton = wx.Button(self, label='Ok')
-        closeButton = wx.Button(self, label='Close')
-        hbox2.Add(okButton)
-        hbox2.Add(closeButton, flag=wx.LEFT, border=5)
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
 
-        vbox.Add(pnl, proportion=1,
-            flag=wx.ALL|wx.EXPAND, border=5)
-        vbox.Add(hbox2,
-            flag=wx.ALIGN_CENTER|wx.TOP|wx.BOTTOM, border=10)
+    def onOk(self, e):
+        self.settings['name'] = self.name.GetValue()
+        self.settings['rect'] = str(self.originx.GetValue()) + \
+            ', ' + str(self.originy.GetValue()) + \
+            ', ' + str(self.sidex.GetValue()) + \
+            ', ' + str(self.sidey.GetValue())
+        sel = self.lc.GetNextSelected(-1)
+        if self.settings['name'] == '' or \
+                self.settings['rect'] == '0, 0, 0, 0' or \
+                sel == -1:
+            wx.MessageBox("Values must not be null", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            out = self.lc.GetItemText(sel, 0)
+            out2 = self.resources.sheets[out]
+            self.settings['sheet'] = out2['abs_path'].rpartition('\\')[2]
+            self.EndModal(wx.ID_OK)
 
-        self.SetSizer(vbox)
-
-        okButton.Bind(wx.EVT_BUTTON, self.OnClose)
-        closeButton.Bind(wx.EVT_BUTTON, self.OnClose)
-
-    def OnClose(self, e):
-        self.Destroy()
-
-    def GetValue():
-        retval['name'] = gettextname
-        retval['rect'] = getrectvalue
-
+    def GetSettings(self):
+        return self.settings
