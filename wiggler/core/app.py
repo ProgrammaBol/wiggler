@@ -1,9 +1,9 @@
 import wx
 
-from wiggler.ui.root import RootWindow
-from wiggler.core.resources import Resources
 from wiggler.core.events import Events
 from wiggler.core.project import Project
+from wiggler.core.resources import Resources
+from wiggler.ui.root import RootWindow
 
 
 class Wiggler(wx.App):

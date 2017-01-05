@@ -35,8 +35,8 @@ References:
     https://wxpython.org/Phoenix/docs/html/wx.MenuBar.html#wx.MenuBar
 
 """
-import wx
 import gettext
+import wx
 
 from collections import OrderedDict
 

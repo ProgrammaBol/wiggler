@@ -1,5 +1,5 @@
-import wx
 import pygame
+import wx
 
 
 class StageEvents(object):

@@ -1,5 +1,5 @@
-import logging
 import inspect
+import logging
 import pprint
 
 ANSIcolor = "\033[1;%dm"

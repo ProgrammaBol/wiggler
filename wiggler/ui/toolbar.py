@@ -47,7 +47,6 @@ class ToolBar(object):
 
     def add_sheet(self, event):
         # definition_fields = Factory_sheet.definition_fields
-        # TODO: define definition_fiels in factories
         # dialog with definition fields, source file with browse button
         # resource with same name , overwrite ?
         definition = {'name': 'testsheet',
@@ -60,8 +59,7 @@ class ToolBar(object):
 
     def del_sheet(self, event):
         # LISTCTR with very large icons ?
-        # TODO: check for all the dependecies involved in the removal
-        # with resources.find_deps
+        # use resources.find_deps
         # print self.resources.find_deps('sheets', 'master')
         # name = 'testsheet'
         # self.resources.remove_resource('sheets', name)

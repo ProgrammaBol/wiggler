@@ -45,10 +45,8 @@ class CodePane(wx.Notebook):
     def set_sprite_code_buffers(self, sprite_builder):
         self.active_sprite = sprite_builder
         self.reload()
-        # FIXME: this starts to look like java, find a better way to get
-        # to this list
         buffers = \
-            sprite_builder.code_handler.sufficiency.get_buffers_list()
+            self.resources.selfsuff.get_buffers_list('sprite')
         for buffer_name in buffers:
             try:
                 buffer_text = sprite_builder.user_code[buffer_name]
@@ -59,7 +57,7 @@ class CodePane(wx.Notebook):
             self.set(buffer_name, buffer_text)
         text = sprite_builder.code_handler.generated_code
         self.set("generated_code", text, readonly=True)
-        # TODO, get a list of sprite attributes
+        # TODO(panda), get a list of sprite attributes
         # for index, attrib in enumerate(dir(MovingSprite)):
         #    self.basket_functions.InsertStringItem(index, attrib)
         # self.basket_functions.DeleteAllItems()

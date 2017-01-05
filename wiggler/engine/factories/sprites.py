@@ -31,7 +31,8 @@ class SpriteBuilder(object):
         }
         self.init_data.update(additional_initdata)
         self.code_handler = CodeHandler(
-            self.resources, self.name, self.user_code, self.sufficiency_level)
+            self.resources, 'sprite', self.name, self.user_code,
+            self.sufficiency_level)
         self.events = params['events']
 
     def update_user_code(self, user_code):

@@ -3,12 +3,12 @@ import wx.py
 
 import wiggler.ui.dialogs as dialogs
 
-from wiggler.ui.stagepane import StagePane
-from wiggler.ui.toolbar import ToolBar
-from wiggler.ui.menubar import MenuBar
 from wiggler.ui.characterspane import CharactersPane
 from wiggler.ui.code_pane import CodePane
+from wiggler.ui.menubar import MenuBar
 from wiggler.ui.spritespane import SpritesPane
+from wiggler.ui.stagepane import StagePane
+from wiggler.ui.toolbar import ToolBar
 
 
 class RootWindow(wx.Frame):
