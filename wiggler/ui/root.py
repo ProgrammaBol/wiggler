@@ -27,7 +27,7 @@ class RootWindow(wx.Frame):
 
         self.menubar = MenuBar(self.events)
         self.Bind(wx.EVT_MENU, self.menubar.notice_dispatcher)
-        self.toolbar = ToolBar(self.resources, self)
+        self.toolbar = ToolBar(self.resources, self, self.events)
 
         self.code_pane = CodePane(self, self.resources, self.events)
         self.characters_pane = CharactersPane(
@@ -95,9 +95,6 @@ class RootWindow(wx.Frame):
         # FIXME get filenam from event
         filename = None
         self.project.load(filename)
-
-    def play(self, event):
-        self.project.play()
 
     def close(self):
         # if self.project.needs_save:
