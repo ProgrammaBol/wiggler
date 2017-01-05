@@ -28,7 +28,7 @@ class StagePane(wx.Control):
         wx.EVT_SIZE(self, self.OnSize)
         wx.EVT_IDLE(self, self.OnIdle)
         self.timer = wx.Timer(self)
-        self.events.subscribe(self, ['projload', 'play'])
+        self.events.subscribe(self, ['projload', 'play', 'stop'])
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_TIMER, self.Update, self.timer)
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
@@ -46,6 +46,8 @@ class StagePane(wx.Control):
             self.clear()
         elif event.notice == 'play':
             self.play()
+        elif event.notice == 'stop':
+            self.stop()
         event.Skip()
 
     def OnIdle(self, ev):
@@ -88,4 +90,13 @@ class StagePane(wx.Control):
         self.stage.update()
 
     def play(self):
+        # if self.code_status == "undef":
+        #  self.events.send('play')
+        # else:
+        #     # TODO(panda): warn about errors in the code
+        #     pass
+        self.stage.pause = False
         self.stage.reset()
+
+    def stop(self):
+        self.stage.pause = True

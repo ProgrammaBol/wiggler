@@ -43,11 +43,3 @@ class Project(object):
     def save(self, filename):
         self.abspath = filename
         self.resources.save_project(filename)
-
-    def play(self):
-        self.events.send('preplay')
-        if self.code_status == "undef":
-            self.events.send('play')
-        else:
-            # TODO(panda): warn about errors in the code
-            pass

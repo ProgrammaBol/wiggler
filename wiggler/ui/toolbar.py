@@ -5,13 +5,14 @@ import wiggler.ui.dialogs as dialogs
 
 class ToolBar(object):
 
-    def __init__(self, resources, parent):
+    def __init__(self, resources, parent, events):
         self.resources = resources
         self.width = 30
         self.height = 30
+        self.events = events
         self.parent = parent
         self.tools = parent.CreateToolBar()
-        self.add_button('play', 'Play', self.parent.play)
+        self.add_button('play', 'Play', self.play)
         self.add_button('stop', 'Stop', self.stop)
         self.add_button('incss', 'incss', self.incss)
         self.add_button('decss', 'decss', self.decss)
@@ -100,8 +101,12 @@ class ToolBar(object):
         # listctrl with animated gifs ?
         pass
 
+    def play(self, event):
+        self.events.send('preplay')
+        self.events.send('play')
+
     def stop(self, event):
-        pass
+        self.events.send('stop')
 
     # Self sufficiency is per-character attribute
     def decss(self, event):
