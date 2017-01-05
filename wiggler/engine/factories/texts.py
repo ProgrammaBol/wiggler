@@ -1,5 +1,5 @@
-import pygame
 import os
+import pygame
 '''
 pattern = "speed_x: %s, speed_y: %s"
 text = unicode(pattern % (player_one.speed_x, player_one.speed_y))

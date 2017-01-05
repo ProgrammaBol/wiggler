@@ -2,14 +2,14 @@
 This module defines sprites
 '''
 import math
-import random
 import pygame
+import random
 
 
 class StaticSprite(pygame.sprite.Sprite):
 
-    '''
-    defines a sprite that will not move relatively to the map
+    '''defines a sprite that will not move relatively to the map
+
     '''
 
     def __init__(self, resources, events, initdata, *group):

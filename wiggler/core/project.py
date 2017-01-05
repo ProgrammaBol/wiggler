@@ -49,5 +49,5 @@ class Project(object):
         if self.code_status == "undef":
             self.events.send('play')
         else:
-            # TODO: warn about errors in the code
+            # TODO(panda): warn about errors in the code
             pass

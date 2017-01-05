@@ -3,8 +3,8 @@ import pygame
 import sys
 import wx
 
-from wiggler.engine.stage import Stage
 from wiggler.core.events import StageEvents
+from wiggler.engine.stage import Stage
 
 tilemap = dict()
 
@@ -88,5 +88,4 @@ class StagePane(wx.Control):
         self.stage.update()
 
     def play(self):
-        self.stage.sweep()
-        self.stage.populate()
+        self.stage.reset()

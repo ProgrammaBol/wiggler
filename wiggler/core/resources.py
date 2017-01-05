@@ -1,20 +1,23 @@
-import os
 import copy
-import yaml
+import os
 import pkg_resources
 import pygame
 import shutil
+import yaml
 
-from wiggler.engine.events import EventQueue
-from wiggler.engine.factories.sounds import SoundChannels, Sound
-from wiggler.engine.factories.sheets import Animation, Costume, Sheet
-from wiggler.engine.factories.sprites import SpriteBuilder
 from wiggler.core.cast import Cast
 from wiggler.core.datastructures import OverlayDict
-from wiggler.core.factories.templates import Template
 from wiggler.core.factories.characters import Character
-from wiggler.core.factories.ui_images import UIimage
 from wiggler.core.factories.projectres import ProjectRes
+from wiggler.core.factories.templates import Template
+from wiggler.core.factories.ui_images import UIimage
+from wiggler.core.self_sufficiency import SelfSufficiency
+from wiggler.engine.background import Background
+from wiggler.engine.events import EventQueue
+from wiggler.engine.factories.images import Image
+from wiggler.engine.factories.sheets import Animation, Costume, Sheet
+from wiggler.engine.factories.sounds import SoundChannels, Sound
+from wiggler.engine.factories.sprites import SpriteBuilder
 
 
 class Resources(object):
@@ -31,6 +34,7 @@ class Resources(object):
         self.factories['sprites'] = SpriteBuilder
         self.factories['templates'] = Template
         self.factories['ui_images'] = UIimage
+        self.factories['images'] = Image
 
         self.load_conf()
         self.types = set(
@@ -50,12 +54,16 @@ class Resources(object):
             res_attr.switch = "both"
         self.meta_files.switch = "both"
         self.projectres = None
+        self.project_def = None
 
         # pygame resources
         self.clock = None
         self.resolution = None
         self.cast = Cast(self)
         self.engine_events = None
+        self.background = Background(self)
+
+        self.selfsuff = SelfSufficiency(self)
 
     def reset_overlays(self):
         for resource_type in self.types:
@@ -153,6 +161,7 @@ class Resources(object):
         self.projectres = ProjectRes()
         project_def = self.projectres.create_new(project_def)
         self.scan_tree(self.projectres.resources_dir, reset=True)
+        self.project_def = project_def
         return project_def
 
     def load_project(self, filename):
@@ -161,6 +170,7 @@ class Resources(object):
         self.projectres = ProjectRes()
         project_def = self.projectres.load(filename=filename)
         self.scan_tree(self.projectres.resources_dir, reset=True)
+        self.project_def = project_def
         return project_def
 
     def close_project(self):
@@ -168,7 +178,7 @@ class Resources(object):
             self.projectres.cleanup()
 
     def import_resources(self, filename):
-        ''' Merge a resources file with current resources tree'''
+        '''Merge a resources file with current resources tree'''
         pass
 
     def save_project(self, filename):

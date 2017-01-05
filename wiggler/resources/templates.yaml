@@ -1,4 +1,11 @@
 ---
 file: basic.j2
 name: basic
-self_sufficiency: 0
+element: sprite
+level: 0
+---
+file: basic_controller.j2
+name: basic_controller
+element: controller
+level: 0
+...

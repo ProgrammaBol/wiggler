@@ -1,29 +1,48 @@
 import pygame
 
+from wiggler.core.code_handler import CodeHandler
 
-class Stage(object):
+
+class Controller(object):
 
     def __init__(self, resources):
-        self.resources = resources
-        self.players = dict()
         self.status = "menu-init"
-        self.screen = None
-        self.elements = pygame.sprite.LayeredUpdates()
-        self.sprite_groups = dict()
-        self.pause = False
-        # self.event_queue.subscribe("keyboard",
-        #                           pygame.KEYDOWN,
-        #                           pygame.K_p,
-        #                           self.toggle_pause)
-        self.currentstatus_elements = dict()
+        self.resources = resources
+        self.elements = Elements(self.resources)
+        self.sufficiency_level = 0
+        self.update_user_code()
 
-    def start(self):
-        pygame.init()
-        self.resources.set_pygame_resources()
-        self.screen = pygame.display.set_mode(self.resources.resolution)
+    def update_user_code(self):
+        try:
+            self.user_code = self.resources.project_def['controller_user_code']
+        except KeyError:
+            self.user_code = {
+                'custom_update': ''
+            }
+        self.code_handler = CodeHandler(
+            self.resources, 'controller', 'custom_controller', self.user_code,
+            self.sufficiency_level)
+        # Make controller custom_update a bound method for class controller
+        custom_module = self.code_handler.module.controller_custom_update
+        self.custom_update = custom_module.__get__(self, self.__class__)
 
-    def toggle_pause(self):
-        self.pause = not self.pause
+    def populate(self):
+        self.elements.empty()
+        for name, character in self.resources.cast.characters.items():
+            character.build_sprites()
+            self.elements.add(character.sprites())
+
+    def sweep(self):
+        self.elements.empty()
+        for character in self.resources.cast.characters.values():
+            character.destroy_sprites()
+
+    def update(self):
+        self.custom_update()
+        self.elements.update()
+        self.collisions()
+        self.elements.purge()
+        return self.elements
 
     def collisions(self):
         collision_elements = self.elements.copy()
@@ -82,41 +101,15 @@ class Stage(object):
                         collided_sprite.collisions['active'].add(sprite)
                         collided_sprite.collisions['points'][sprite] = point
 
-    def set_background(self):
-        # load resourc images, let it support crop
-        pass
 
-    def populate(self):
-        self.elements.empty()
-        for name, character in self.resources.cast.characters.items():
-            character.build_sprites()
-            self.elements.add(character.sprites())
+class Elements(pygame.sprite.LayeredUpdates):
 
-    def sweep(self):
-        self.elements.empty()
-        for character in self.resources.cast.characters.values():
-            character.destroy_sprites()
+    def __init__(self, resources):
+        self.resources = resources
+        super(Elements, self).__init__()
 
-    def update(self):
-        self.resources.engine_events.update()
-        self.resources.clock.tick()
-        self.screen.fill((255, 255, 255))
-        # pygame.draw.circle(self.screen, (250, 0, 0), (100, 100), 50)
-        # screen.fill(default_backcolor)
-        # screen.blit(background_image, (0, 0))
-        background_change, \
-            background, \
-            screen_elements = self.elements_update()
-        # screen_elements.draw(screen)
-        self.elements.draw(self.screen)
-        pygame.event.pump()
-        pygame.display.flip()
-        # clock.tick(max_fps)
-
-    def elements_update(self):
-        if self.pause:
-            return False, None, self.elements
-        for sprite in self.elements.sprites():
+    def purge(self):
+        for sprite in self.sprites():
             if getattr(sprite, "destroyed", False):
                 sprite.kill()
                 try:
@@ -130,6 +123,46 @@ class Stage(object):
                 except (TypeError, AttributeError):
                     pass
 
-        self.elements.update()
 
-        return False, None, self.elements
+class Stage(object):
+
+    def __init__(self, resources):
+        self.resources = resources
+        self.screen = None
+        self.controller = Controller(self.resources)
+        self.pause = False
+
+    def start(self):
+        pygame.init()
+        self.resources.set_pygame_resources()
+        self.screen = pygame.display.set_mode(self.resources.resolution)
+
+    def toggle_pause(self):
+        self.pause = not self.pause
+
+    def reset(self):
+        self.controller.sweep()
+        self.controller.update_user_code()
+        self.controller.populate()
+
+    def sweep(self):
+        self.controller.sweep()
+        self.controller.update_user_code()
+
+    def background_draw(self, background):
+        if background.type == 'solid':
+            self.screen.fill(background.color)
+        elif background.type == 'image':
+            self.screen.blit(background.image, (0, 0))
+
+    def update(self):
+        if self.pause:
+            return
+        else:
+            self.resources.engine_events.update()
+            self.resources.clock.tick()
+            elements = self.controller.update()
+            self.background_draw(self.resources.background)
+            elements.draw(self.screen)
+            pygame.event.pump()
+            pygame.display.flip()

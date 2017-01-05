@@ -1,10 +1,10 @@
 
 class OverlayDict(object):
 
-    '''
-    OverlayDict operates on two dictionaries: base and overlay
+    '''OverlayDict operates on two dictionaries: base and overlay
     once the overlay switch is set to True, the base switch becomes
     immutable, and the overlay dict take precedence on all operations
+
     '''
 
     def __init__(self, *args):

@@ -3,7 +3,6 @@ import re
 import sys
 import traceback
 
-from wiggler.core.self_sufficiency import SelfSufficiency
 
 START = 0
 END = 1
@@ -49,8 +48,8 @@ class CodeSection(object):
         return None, None
 
     def deloopify(self):
-        '''
-        Inject a yield at the end of every loop
+        '''Inject a yield at the end of every loop
+
         '''
         code_lines = self.original_code.splitlines()
         lines = len(code_lines)
@@ -97,16 +96,17 @@ class CodeSection(object):
 
 class CodeHandler(object):
 
-    def __init__(self, resources, module_name, user_code, sufficiency_level):
+    def __init__(self, resources, element, module_name, user_code,
+                 sufficiency_level):
         self.module_name = module_name
+        self.element = element
         self.resources = resources
         self.generated_code = ''
         self.sections = {}
         self.user_code = user_code
         self.compile_error = False
         self.template = None
-        self.sufficiency = SelfSufficiency(
-            self.resources, sufficiency_level)
+        self.sufficiency_level = sufficiency_level
         self.set_template()
         self.module = None
         self.traceback_message = None
@@ -117,7 +117,7 @@ class CodeHandler(object):
         self.generate()
 
     def set_template(self):
-        self.template = self.sufficiency.get_template()
+        self.template = self.resources.selfsuff.get_template(self.element)
 
     def update_user_code(self, user_code):
         self.user_code = user_code
@@ -148,13 +148,18 @@ class CodeHandler(object):
         self.compile_error = False
         mangled_user_code = {}
 
-        sections = self.sufficiency.get_buffers_list()
+        sections = self.resources.selfsuff.get_buffers_list(self.element)
         for section_name, options in sections.items():
             try:
                 code = self.user_code[section_name]
             except KeyError:
+                # Section does not exist in code
                 continue
-            offsets = (self.template.section_offset[section_name],)
+            try:
+                offsets = (self.template.section_offset[section_name],)
+            except KeyError:
+                # section does not exist in template
+                continue
             try:
                 deloopify = options['deloopify']
             except KeyError:
