@@ -80,7 +80,7 @@ class ToolBar(object):
         if result == wx.ID_OK:
             self.settings = dia.GetSettings()
             # print self.settings['name'], self.settings['rect'], \
-            # self.settings['sheet']
+            #    self.settings['sheet']
             try:
                 out = self.resources.add_resource(
                     'costumes', self.settings['name'],
