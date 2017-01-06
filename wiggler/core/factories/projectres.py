@@ -9,7 +9,7 @@ class ProjectRes(object):
 
     def __init__(self):
 
-        self.temp_dir = tempfile.mkdtemp(prefix="wiggler-")
+        self.temp_dir = tempfile.mkdtemp(prefix="wiggler-project-")
         self.def_filename = os.path.join(self.temp_dir, "project.yaml")
         self.resources_dir = os.path.join(self.temp_dir, "resources")
         self.filename = None

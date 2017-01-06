@@ -21,7 +21,7 @@ class Controller(object):
             }
         self.code_handler = CodeHandler(
             self.resources, 'controller', 'custom_controller', self.user_code,
-            self.sufficiency_level)
+            self.sufficiency_level, self.resources.controller_module)
         # Make controller custom_update a bound method for class controller
         custom_module = self.code_handler.module.controller_custom_update
         self.custom_update = custom_module.__get__(self, self.__class__)

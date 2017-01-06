@@ -3,6 +3,7 @@ import os
 import pkg_resources
 import pygame
 import shutil
+import tempfile
 import yaml
 
 from wiggler.core.cast import Cast
@@ -41,6 +42,10 @@ class Resources(object):
             ['sounds', 'sheets', 'sprites', 'images', 'musics', 'fonts',
              'animations', 'costumes', 'templates', 'characters',
              'ui_images'])
+        self.modules_dir = None
+        self.reset_modules_dir()
+        self.instances = None
+        self.reset_instances()
         for resource_type in self.types:
             setattr(self, resource_type, OverlayDict())
         library_basepath = pkg_resources.resource_filename('wiggler',
@@ -64,6 +69,23 @@ class Resources(object):
         self.background = Background(self)
 
         self.selfsuff = SelfSufficiency(self)
+
+    def reset_instances(self):
+        self.instances = {}
+        for resource_type in self.types:
+            self.instances[resource_type] = {}
+
+    def reset_modules_dir(self):
+        if self.modules_dir is not None:
+            shutil.rmtree(self.modules_dir)
+        self.modules_dir = tempfile.mkdtemp(prefix="wiggler-modules-")
+        self.module_dirs = {}
+        for resource_type in self.types:
+            module_dir = os.path.join(self.modules_dir, resource_type)
+            os.mkdir(module_dir)
+            self.module_dirs[resource_type] = module_dir
+        self.controller_module = os.path.join(self.modules_dir,
+                                              "controller.py")
 
     def reset_overlays(self):
         for resource_type in self.types:
@@ -161,6 +183,8 @@ class Resources(object):
         self.projectres = ProjectRes()
         project_def = self.projectres.create_new(project_def)
         self.scan_tree(self.projectres.resources_dir, reset=True)
+        self.reset_modules_dir()
+        self.reset_instances()
         self.project_def = project_def
         return project_def
 
@@ -170,10 +194,13 @@ class Resources(object):
         self.projectres = ProjectRes()
         project_def = self.projectres.load(filename=filename)
         self.scan_tree(self.projectres.resources_dir, reset=True)
+        self.reset_modules_dir()
+        self.reset_instances()
         self.project_def = project_def
         return project_def
 
-    def close_project(self):
+    def cleanup(self):
+        shutil.rmtree(self.modules_dir)
         if self.projectres is not None:
             self.projectres.cleanup()
 
@@ -337,10 +364,15 @@ class Resources(object):
         return definition
 
     def load_resource(self, resource_type, resource_name):
+        module_dir = self.module_dirs[resource_type]
+        module_file = os.path.join(module_dir,
+                                   resource_name + os.extsep + "py")
         resource_def = getattr(self, resource_type)[resource_name]
         factory = self.factories[resource_type]
         instance = factory(self, resource_name, resource_def,
-                           events=self.engine_events)
+                           events=self.engine_events,
+                           module_file=module_file)
+        self.instances[resource_type][resource_name] = instance
         return instance
 
     def load_ui_images(self, ui_image_name):
