@@ -30,9 +30,10 @@ class SpriteBuilder(object):
             'sounds_set': self.sounds,
         }
         self.init_data.update(additional_initdata)
+        self.module_filename = params['module_file']
         self.code_handler = CodeHandler(
             self.resources, 'sprite', self.name, self.user_code,
-            self.sufficiency_level)
+            self.sufficiency_level, self.module_filename)
         self.events = params['events']
 
     def update_user_code(self, user_code):

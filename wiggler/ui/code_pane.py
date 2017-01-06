@@ -12,7 +12,7 @@ class CodePane(wx.Notebook):
         self.resources = resources
         self.active_sprite = None
         self.events.subscribe(
-            self, ['reload', 'actsprite', 'preplay', 'projload'])
+            self, ['reload', 'actsprite', 'preplay', 'projload', 'traceback'])
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
 
     def notice_handler(self, event):
@@ -24,6 +24,9 @@ class CodePane(wx.Notebook):
             self.set_sprite_code_buffers(event.data.sprite_builder)
         elif event.notice == 'preplay':
             self.save_active_buffers()
+        elif event.notice == 'traceback':
+            if event.data.code_handler is not None:
+                self.handle_traceback(event.data.code_handler)
         event.Skip()
 
     def set(self, buffer_name, text, readonly=False):
@@ -62,6 +65,13 @@ class CodePane(wx.Notebook):
         #    self.basket_functions.InsertStringItem(index, attrib)
         # self.basket_functions.DeleteAllItems()
 
+    def handle_traceback(self, code_handler):
+        traceback_line = code_handler.traceback_line
+        errored_section = code_handler.errored_section
+        errored_line = code_handler.errored_section_line
+        self._buffers["generated_code"].mark_error(traceback_line)
+        self._buffers[errored_section].mark_error(errored_line)
+
     def save_active_buffers(self):
         new_user_code = {}
         sprite_builder = self.active_sprite
@@ -73,13 +83,7 @@ class CodePane(wx.Notebook):
         sprite_builder.update_user_code(new_user_code)
         self.set("generated_code", sprite_builder.code_handler.generated_code)
         if sprite_builder.code_handler.compile_error:
-            traceback_message = sprite_builder.code_handler.traceback_message
-            traceback_line = sprite_builder.code_handler.traceback_line
-            errored_section = sprite_builder.code_handler.errored_section
-            errored_line = sprite_builder.code_handler.errored_section_line
-            self._buffers["generated_code"].mark_error(traceback_line)
-            self._buffers[errored_section].mark_error(errored_line)
-            self.events.send('codeerror', traceback_message=traceback_message)
+            self.handle_traceback(sprite_builder.code_handler)
         else:
             for editor in self._buffers.values():
                 editor.clear_errors()

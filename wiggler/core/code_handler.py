@@ -97,10 +97,11 @@ class CodeSection(object):
 class CodeHandler(object):
 
     def __init__(self, resources, element, module_name, user_code,
-                 sufficiency_level):
+                 sufficiency_level, module_filename):
         self.module_name = module_name
         self.element = element
         self.resources = resources
+        self.module_filename = module_filename
         self.generated_code = ''
         self.sections = {}
         self.user_code = user_code
@@ -140,6 +141,20 @@ class CodeHandler(object):
                 self.errored_section_line = section.get_original_line(line)
                 break
 
+    def handle_exception(self, exc_type, exc_value, exc_traceback, exc=None):
+        if exc is not None:
+            self.traceback_line = exc.lineno
+        else:
+            c_prev = exc_traceback
+            c_cur = exc_traceback
+            while c_cur is not None:
+                c_prev = c_cur
+                c_cur = c_cur.tb_next
+            self.traceback_line = c_prev.tb_lineno
+        self.traceback_message = traceback.format_exc()
+        self.compile_error = True
+        self.find_section_line(self.traceback_line)
+
     def generate(self):
         self.traceback_message = None
         self.traceback_line = None
@@ -160,10 +175,7 @@ class CodeHandler(object):
             except KeyError:
                 # section does not exist in template
                 continue
-            try:
-                deloopify = options['deloopify']
-            except KeyError:
-                deloopify = True
+            deloopify = options.get('deloopify', True)
             self.sections[section_name] = CodeSection(code, offsets,
                                                       deloopify=deloopify)
             mangled_user_code[section_name] = \
@@ -178,29 +190,20 @@ class CodeHandler(object):
                     section.change_start_offset(section_size - 1)
 
         self.generated_code = self.template.render(mangled_user_code)
+        with open(self.module_filename, "w") as module_file:
+            module_file.write(self.generated_code)
 
-        if self.module_name in sys.modules:
-            module = sys.modules[self.module_name]
-        else:
-            module = imp.new_module(self.module_name)
         try:
-            exec(self.generated_code) in module.__dict__
-            self.module = module
-        except Exception as e:
+            self.module = imp.load_source(self.module_name,
+                                          self.module_filename)
+        except Exception as exc:
+            self.module = None
             exc_type, exc_value, exc_traceback = sys.exc_info()
             if exc_type == SyntaxError:
-                self.traceback_line = e.lineno
-            else:
-                c_prev = exc_traceback
-                c_cur = exc_traceback
-                while c_cur is not None:
-                    c_prev = c_cur
-                    c_cur = c_cur.tb_next
-                self.traceback_line = c_prev.tb_lineno
-            self.traceback_message = traceback.format_exc()
-            self.compile_error = True
-            self.module = None
-            self.find_section_line(self.traceback_line)
+                self.handle_exception(exc_type, exc_value, exc_traceback,
+                                      exc=exc)
+            sys.excepthook(exc_type, exc_value, exc_traceback)
+
         finally:
             try:
                 del exc_traceback

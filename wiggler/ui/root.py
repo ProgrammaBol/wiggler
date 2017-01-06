@@ -9,6 +9,7 @@ from wiggler.ui.menubar import MenuBar
 from wiggler.ui.spritespane import SpritesPane
 from wiggler.ui.stagepane import StagePane
 from wiggler.ui.toolbar import ToolBar
+from wiggler.ui.tracebackpane import TracebackPane
 
 
 class RootWindow(wx.Frame):
@@ -32,7 +33,7 @@ class RootWindow(wx.Frame):
         self.characters_pane = CharactersPane(
             self, self.resources, self.events)
         self.sprites_pane = SpritesPane(self, self.resources, self.events)
-        self.setup_shell()
+        self.traceback = TracebackPane(self, self.resources, self.events)
         self.setup_basket_classes()
         self.setup_basket_members()
 
@@ -72,7 +73,7 @@ class RootWindow(wx.Frame):
         sizer.Add(self.basket_functions, (1, 1), span=(1, 1), flag=wx.EXPAND)
         sizer.Add(self.code_pane, (0, 2), span=(2, 1), flag=wx.EXPAND)
         sizer.Add(self.characters_pane, (1, 0), flag=wx.EXPAND)
-        sizer.Add(self.shell, (2, 0), span=(1, 3), flag=wx.EXPAND)
+        sizer.Add(self.traceback, (2, 0), span=(1, 3), flag=wx.EXPAND)
         sizer.Fit(self)
         sizer.AddGrowableCol(2)
         sizer.AddGrowableRow(2)
@@ -90,10 +91,6 @@ class RootWindow(wx.Frame):
         self.basket_classes.InsertStringItem(0, "MovingSprite")
         self.basket_classes.InsertStringItem(1, "StaticSprite")
 
-    def setup_shell(self):
-        self.shell = wx.py.shell.Shell(parent=self)
-        self.shell.Show()
-
     def load(self, event):
         # FIXME get filenam from event
         filename = None
@@ -108,7 +105,7 @@ class RootWindow(wx.Frame):
             proceed = dialogs.unsaved_warning(self)
             if not proceed:
                 return
-        self.resources.close_project()
+        self.resources.cleanup()
         self.Close(True)
 
     def open_project(self):
