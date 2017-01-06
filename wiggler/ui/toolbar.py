@@ -72,7 +72,28 @@ class ToolBar(object):
         # name = 'testsheet'
         # self.resources.remove_resource('sheets', name)
         # and everything associated to IT!!!
-        pass
+        dia = dialogs.DelSheetDialog(None, -1, "Delete sheet")
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            for x in self.resources.find_deps('sheets',
+                                              self.settings['sheet']):
+                for elem in x:
+                    print elem[0], elem[1]
+                    try:
+                        self.resources.remove_resource(elem[0], elem[1])
+                    except Exception, e:
+                        wx.MessageBox(str(e), "Error", wx.OK |
+                                      wx.ICON_INFORMATION)
+
+            try:
+                self.resources.remove_resource('sheets',
+                                               self.settings['sheet'])
+            except Exception, e:
+                wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
+
+        dia.Destroy()
+        return True
 
     def add_costume(self, event):
         # dialog with definitions and a area selection on the sheet
@@ -100,15 +121,18 @@ class ToolBar(object):
         result = dia.ShowModal()
         if result == wx.ID_OK:
             self.settings = dia.GetSettings()
-            for x in self.resources.find_deps('costumes', self.settings['costume']):
+            for x in self.resources.find_deps('costumes',
+                                              self.settings['costume']):
                 for elem in x:
                     try:
                         self.resources.remove_resource(elem[0], elem[1])
                     except Exception, e:
-                        wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
-            
+                        wx.MessageBox(str(e), "Error", wx.OK |
+                                      wx.ICON_INFORMATION)
+
             try:
-                self.resources.remove_resource(elem[0], elem[1])
+                self.resources.remove_resource('costumes',
+                                               self.settings['costume'])
             except Exception, e:
                 wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
 
