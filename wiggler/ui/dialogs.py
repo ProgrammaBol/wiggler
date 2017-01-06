@@ -40,28 +40,82 @@ def open_sheet(parent):
 
 class SelectSheet(wx.ListCtrl):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, parent, id):
+        wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
+                              wx.LC_SINGLE_SEL)
+        self.resources = Resources()
+        self.InsertColumn(0, 'Sheet file', width=wx.LIST_AUTOSIZE_USEHEADER)
         for sheetname in self.resources.sheets.keys():
-            Sheet = self.resources.load_resource('sheets', sheetname)
-            self.AddItem(Sheet)
+            num_items = self.GetItemCount()
+            self.InsertStringItem(num_items, sheetname)
 
+class SelectCostume(wx.ListCtrl):
 
-class ResourceDialog(wx.Dialog):
+    def __init__(self, parent, id):
+        wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
+                              wx.LC_SINGLE_SEL)
+        self.resources = Resources()
+        self.InsertColumn(0, 'Costume name', width=wx.LIST_AUTOSIZE_USEHEADER)
+        for sheetname in self.resources.costumes.keys():
+            num_items = self.GetItemCount()
+            self.InsertStringItem(num_items, sheetname)
+
+class DelCostumeDialog(wx.Dialog):
+    
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 300))
+        self.settings = {}
+        self.resources = Resources()
+        
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+        
+        boxup = wx.BoxSizer(wx.VERTICAL)
+        self.lc = SelectCostume(self, -1)
+        boxup.Add(wx.StaticText(self, 0, 'Select a costume to remove:'), 0,
+                  wx.ALL, 5)
+        boxup.Add(self.lc, 1, wx.ALL | wx.EXPAND, 5)
+        
+        boxdown = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        boxdown.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        boxdown.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        
+        boxglobal.Add(boxup, 5, wx.EXPAND, 5)
+        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
+        self.SetSizer(boxglobal)
+        
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        sel = self.lc.GetNextSelected(-1)
+        if sel == -1:
+            wx.MessageBox("Select a costume", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            out = self.lc.GetItemText(sel, 0)
+            out2 = self.resources.costumes[out]
+            self.settings['costume'] = out2['name']
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+    
+class AddResourceDialog(wx.Dialog):
 
     def __init__(self, parent, id, title):
         wx.Dialog.__init__(self, parent, id, title, size=(300, 380))
         self.settings = {}
+        self.resources = Resources()
 
         boxglobal = wx.BoxSizer(wx.VERTICAL)
 
         boxup = wx.BoxSizer(wx.VERTICAL)
-        self.lc = wx.ListCtrl(self, -1, style=wx.LC_REPORT |
-                              wx.LC_SINGLE_SEL)
-        self.resources = Resources()
-        self.lc.InsertColumn(0, 'Sheet file', width=wx.LIST_AUTOSIZE_USEHEADER)
-        for sheetname in self.resources.sheets.keys():
-            num_items = self.lc.GetItemCount()
-            self.lc.InsertStringItem(num_items, sheetname)
+
+        self.lc = SelectSheet(self, -1)
         boxup.Add(wx.StaticText(self, 0, 'Select source sheet file:'), 0,
                   wx.ALL, 5)
         boxup.Add(self.lc, 0, wx.ALL, 5)
@@ -72,7 +126,7 @@ class ResourceDialog(wx.Dialog):
         boxdown1.Add(wx.StaticText(self, 0, 'Insert costume name:'), 0,
                      wx.ALL, 5)
         self.name = wx.TextCtrl(self, 0, '')
-        boxdown1.Add(self.name, -1, wx.ALL, 5)
+        boxdown1.Add(self.name, -1, wx.RIGHT, 5)
 
         boxdown2 = wx.BoxSizer(wx.HORIZONTAL)
         boxdown2.Add(wx.StaticText(self, -1, 'Define costume RECT:'), 0,

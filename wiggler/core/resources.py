@@ -275,7 +275,7 @@ class Resources(object):
         elif resource_type == 'costumes':
             for sprite_name, sprite_def in getattr(self, 'sprites').items():
                 if name in sprite_def['costumes']:
-                    soft_deps.update(set([('sprites', name)]))
+                    soft_deps.update(set([('sprites', sprite_name)]))
                     __, soft = self.find_deps('sprites', sprite_name)
                     soft_deps.update(soft)
         elif resource_type == 'sounds':

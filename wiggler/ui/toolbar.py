@@ -19,6 +19,7 @@ class ToolBar(object):
         self.add_button('incss', 'add sheet', self.add_sheet)
         self.add_button('decss', 'del sheet', self.del_sheet)
         self.add_button('incss', 'add costume', self.add_costume)
+        self.add_button('decss', 'add costume', self.del_costume)
         self.add_button('incss', 'add sprite', self.decss)
         self.add_button('incss', 'add character', self.decss)
         self.tools.Realize()
@@ -75,7 +76,7 @@ class ToolBar(object):
 
     def add_costume(self, event):
         # dialog with definitions and a area selection on the sheet
-        dia = dialogs.ResourceDialog(None, -1, "Add costume")
+        dia = dialogs.AddResourceDialog(None, -1, "Add costume")
         result = dia.ShowModal()
         if result == wx.ID_OK:
             self.settings = dia.GetSettings()
@@ -92,11 +93,27 @@ class ToolBar(object):
                               wx.OK | wx.ICON_INFORMATION)
         dia.Destroy()
         return True
-        pass
 
     def del_costume(self, event):
         # LISTCTRL with large icons
-        pass
+        dia = dialogs.DelCostumeDialog(None, -1, "Delete costume")
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            for x in self.resources.find_deps('costumes', self.settings['costume']):
+                for elem in x:
+                    try:
+                        self.resources.remove_resource(elem[0], elem[1])
+                    except Exception, e:
+                        wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
+            
+            try:
+                self.resources.remove_resource(elem[0], elem[1])
+            except Exception, e:
+                wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
+
+        dia.Destroy()
+        return True
 
     def add_sprite(self, event):
         # dialog with definition, select from existing costumes,
