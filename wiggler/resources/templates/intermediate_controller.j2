@@ -1,0 +1,8 @@
+def controller_custom_update(self):
+    b_type = self.resources.project_def['background']['type']
+    if b_type == 'solid':
+        color = self.resources.project_def['background']['color']
+        self.resources.background.set_solid(color)
+    elif b_type == 'image':
+        image_name = self.resources.project_def['background']['image_name']
+        self.resources.background.set_image(image_name)

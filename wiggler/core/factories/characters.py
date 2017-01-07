@@ -11,14 +11,26 @@ class Character(pygame.sprite.Group):
         super(Character, self).__init__()
         self.name = name
         self.resources = resources
+        self.definition = definition
         self.builders = {}
         self.builders_list = []
         self.active_sprite = 0
         sprite_names = definition['sprites']
         for name in sprite_names:
-            self.builders_list.append(name)
-            sprite_builder = self.resources.load_resource('sprites', name)
-            self.builders[name] = sprite_builder
+            self.add_sprite(name)
+
+    def add_sprite(self, sprite_name):
+        self.builders_list.append(sprite_name)
+        sprite_builder = self.resources.load_resource('sprites', sprite_name)
+        self.builders[sprite_name] = sprite_builder
+        if sprite_name not in self.definition['sprites']:
+            self.definition['sprites'].append(sprite_name)
+
+    def remove_sprite(self, sprite_name):
+        self.builders_list.remove(sprite_name)
+        del(self.biulders[sprite_name])
+        self.active_sprite = 0
+        self.definition['sprites'].remove(sprite_name)
 
     def set_active_sprite(self, spriteindex):
         if spriteindex is not None:

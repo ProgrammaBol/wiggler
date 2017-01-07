@@ -20,6 +20,20 @@ class CharactersPane(wx.ListCtrl):
             self.load_character(name=event.data.charname)
         elif event.notice == 'charadded':
             self.add_character(event.data.charname, event.data.chardef)
+        elif event.notice == 'add_char_sprite':
+            character = self.resources.cast.get_character()
+            character.add_sprite(event.data.sprite_name)
+        elif event.notice == 'remove_char_sprite':
+            character = self.resources.cast.get_character()
+            character.remove_sprite(event.data.sprite_name)
+        elif event.notice == 'add_sprite_costume':
+            character = self.resources.cast.get_character()
+            sprite = character.get_sprite_builder()
+            sprite.add_costume(event.data.costume_name)
+        elif event.notice == 'remove_sprite_costume':
+            character = self.resources.cast.get_character()
+            sprite = character.get_sprite_builder()
+            sprite.add_costume(event.data.costume_name)
         event.Skip()
 
     def reload(self):
@@ -51,5 +65,5 @@ class CharactersPane(wx.ListCtrl):
         image_scaled = image.Scale(30, 30, wx.IMAGE_QUALITY_HIGH)
         sprite_bitmap = wx.BitmapFromImage(image_scaled)
         self.il.Add(sprite_bitmap)
-        index = self.InsertImageItem(0, 0)
+        index = self.InsertImageStringItem(0, character.name, 0)
         self.resources.cast.set_index(character.name, index)

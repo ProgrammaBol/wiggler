@@ -13,7 +13,7 @@ class Background(object):
         if color != self.color:
             if type(color) == tuple:
                 self.color = color
-            if type(color) == str:
+            if type(color) == str or type(color) == unicode:
                 color_tuple = tuple(map(int, color.split(',')))
                 self.color = color_tuple
 
