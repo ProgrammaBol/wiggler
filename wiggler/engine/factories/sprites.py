@@ -36,6 +36,15 @@ class SpriteBuilder(object):
             self.sufficiency_level, self.module_filename)
         self.events = params['events']
 
+    def add_costume(self, costume_name):
+        self.costumes.add(costume_name)
+        if costume_name not in self.definition['costumes']:
+            self.definition['costumes'].append(costume_name)
+
+    def del_costume(self, costume_name):
+        self.costumes.remove(costume_name)
+        self.definition['costumes'].remove(costume_name)
+
     def update_user_code(self, user_code):
         self.definition['user_code'] = user_code
         self.user_code = user_code

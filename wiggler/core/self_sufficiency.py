@@ -30,11 +30,21 @@ sprites_buffers_lists = [
     level_1,
 ]
 
-controller_buffers_lists = [{
+controller_level_0 = {
     'custom_update': {
         'deloopify': True
     }
-}]
+}
+controller_level_1 = {
+    'custom_update': {
+        'deloopify': True
+    }
+}
+
+controller_buffers_lists = [
+    controller_level_0,
+    controller_level_1
+]
 
 
 class SelfSufficiency(object):

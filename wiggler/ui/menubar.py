@@ -42,6 +42,26 @@ from collections import OrderedDict
 
 gettext.install("wiggler")
 
+ID_CHANGE_BACKGROUND = wx.NewId()
+ID_ADD_COSTUME = wx.NewId()
+ID_DEL_COSTUME = wx.NewId()
+ID_ADD_SHEET = wx.NewId()
+ID_DEL_SHEET = wx.NewId()
+ID_ADD_CHARACTER = wx.NewId()
+ID_DEL_CHARACTER = wx.NewId()
+ID_ADD_ANIMATION = wx.NewId()
+ID_DEL_ANIMATION = wx.NewId()
+ID_ADD_SPRITE = wx.NewId()
+ID_DEL_SPRITE = wx.NewId()
+ID_ADD_IMAGE = wx.NewId()
+ID_DEL_IMAGE = wx.NewId()
+ID_ADD_SOUND = wx.NewId()
+ID_DEL_SOUND = wx.NewId()
+ID_ADD_MUSIC = wx.NewId()
+ID_DEL_MUSIC = wx.NewId()
+ID_ADD_TEXT = wx.NewId()
+ID_DEL_TEXT = wx.NewId()
+
 
 class MenuBar(wx.MenuBar):
 
@@ -74,6 +94,63 @@ class MenuBar(wx.MenuBar):
             wx.ID_PREFERENCES: ("Pr&eferences", "Open the preference dialog",
                                 'preferences'),
             wx.ID_SEPARATOR: (),
+            ID_ADD_COSTUME: ('Add costume',
+                             'Add a new costume to project library',
+                             'add_costume'),
+            ID_DEL_COSTUME: ('Remove costume',
+                             'Remove costume from project library',
+                             'del_costume'),
+            ID_ADD_SHEET: ('Add sprite sheet',
+                           'Add a new sheet to project library',
+                           'add_sheet'),
+            ID_DEL_SHEET: ('Remove sprite sheet',
+                           'Remove sheet from project library',
+                           'del_sheet'),
+            ID_ADD_CHARACTER: ('Add character',
+                               'Add a new character to project library',
+                               'add_character'),
+            ID_DEL_CHARACTER: ('Remove character',
+                               'Remove character from project library',
+                               'del_character'),
+            ID_ADD_ANIMATION: ('Add animation',
+                               'Add a new animation to project library',
+                               'add_animation'),
+            ID_DEL_ANIMATION: ('Remove animation',
+                               'Remove animation from project library',
+                               'del_animation'),
+            ID_ADD_SPRITE: ('Add sprite',
+                            'Add a new sprite to project library',
+                            'add_sprite'),
+            ID_DEL_SPRITE: ('Remove sprite',
+                            'Remove sprite from project library',
+                            'del_sprite'),
+            ID_ADD_IMAGE: ('Add image',
+                           'Add a new image to project library',
+                           'add_image'),
+            ID_DEL_IMAGE: ('Remove image',
+                           'Remove image from project library',
+                           'del_image'),
+            ID_ADD_SOUND: ('Add sound',
+                           'Add a new sound to project library',
+                           'add_sound'),
+            ID_DEL_SOUND: ('Remove sound',
+                           'Remove sound from project library',
+                           'del_sound'),
+            ID_ADD_MUSIC: ('Add music',
+                           'Add a new music to project library',
+                           'add_music'),
+            ID_DEL_MUSIC: ('Remove music',
+                           'Remove music from project library',
+                           'del_music'),
+            ID_ADD_TEXT: ('Add text',
+                          'Add a new text box to project library',
+                          'add_text'),
+            ID_DEL_TEXT: ('Remove text',
+                          'Remove text box from project library',
+                          'del_text'),
+            ID_CHANGE_BACKGROUND: ('Change default background',
+                                   'Change default background for the project',
+                                   'change_background'),
         }
         self.menu = OrderedDict()
         self.menu["&File"] = [
@@ -95,6 +172,37 @@ class MenuBar(wx.MenuBar):
             wx.ID_PASTE,
             wx.ID_SEPARATOR,
             wx.ID_PREFERENCES,
+        ]
+        self.menu['&Resources'] = [
+            ID_CHANGE_BACKGROUND,
+            wx.ID_SEPARATOR,
+            ID_ADD_SHEET,
+            ID_DEL_SHEET,
+            wx.ID_SEPARATOR,
+            ID_ADD_COSTUME,
+            ID_DEL_COSTUME,
+            wx.ID_SEPARATOR,
+            ID_ADD_CHARACTER,
+            ID_DEL_CHARACTER,
+            wx.ID_SEPARATOR,
+            ID_ADD_SPRITE,
+            ID_DEL_SPRITE,
+            wx.ID_SEPARATOR,
+            ID_ADD_IMAGE,
+            ID_DEL_IMAGE,
+            wx.ID_SEPARATOR,
+            ID_ADD_ANIMATION,
+            ID_DEL_ANIMATION,
+            wx.ID_SEPARATOR,
+            ID_ADD_SOUND,
+            ID_DEL_SOUND,
+            wx.ID_SEPARATOR,
+            ID_ADD_MUSIC,
+            ID_DEL_MUSIC,
+            wx.ID_SEPARATOR,
+            ID_ADD_TEXT,
+            ID_DEL_TEXT,
+            wx.ID_SEPARATOR,
         ]
         self.menu["&Appearance"] = []
 

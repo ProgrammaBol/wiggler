@@ -68,6 +68,11 @@ class CostumesSet(object):
         if make_active:
             self.set_active(costume_name)
 
+    def remove(self, costume_name):
+        self.costumes_list.remove(costume_name)
+        if self.active == costume_name:
+            self.active = None
+
     def set_active(self, costume_name):
         self.active = self.costumes[costume_name]
         return self.active.get()

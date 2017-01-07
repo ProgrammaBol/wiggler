@@ -12,7 +12,8 @@ class CodePane(wx.Notebook):
         self.resources = resources
         self.active_sprite = None
         self.events.subscribe(
-            self, ['reload', 'actsprite', 'preplay', 'projload', 'traceback'])
+            self, ['reload', 'actsprite', 'preplay', 'projload', 'traceback',
+                   'selfsuff_change'])
         self.Bind(self.events.EVT_NOTICE, self.notice_handler)
 
     def notice_handler(self, event):
@@ -20,6 +21,9 @@ class CodePane(wx.Notebook):
             self.reload()
         if event.notice == 'projload':
             self.reload()
+        elif event.notice == 'selfsuff_change':
+            self.save_active_buffers()
+            self.set_sprite_code_buffers(self.active_sprite)
         elif event.notice == 'actsprite':
             self.set_sprite_code_buffers(event.data.sprite_builder)
         elif event.notice == 'preplay':

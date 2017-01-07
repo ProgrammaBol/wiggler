@@ -6,6 +6,7 @@ import wiggler.ui.dialogs as dialogs
 from wiggler.ui.characterspane import CharactersPane
 from wiggler.ui.code_pane import CodePane
 from wiggler.ui.menubar import MenuBar
+from wiggler.ui.resources import ResourceManager
 from wiggler.ui.spritespane import SpritesPane
 from wiggler.ui.stagepane import StagePane
 from wiggler.ui.toolbar import ToolBar
@@ -19,6 +20,8 @@ class RootWindow(wx.Frame):
         self.events = events
         self.project = project
         self.resources = resources
+        self.resourcemanager = ResourceManager(self, self.resources,
+                                               self.events)
         self.SetMinSize((100, 100))
         self.stage_resolution = self.resources.conf['stage_resolution']
         self.stage_pane = StagePane(

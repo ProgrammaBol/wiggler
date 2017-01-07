@@ -177,6 +177,16 @@ class Resources(object):
         # except IOError:
         #    pass
 
+    def change_default_background(self, back_type, back_spec):
+        background_def = {
+            'type': back_type,
+        }
+        if back_type == "solid":
+            background_def['color'] = back_spec
+        elif back_type == "image":
+            background_def['image_name'] = back_spec
+        self.project_def['background'] = background_def
+
     def create_new_project(self, project_def=None):
         if self.projectres is not None:
             self.projectres.cleanup()
