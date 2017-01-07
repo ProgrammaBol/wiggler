@@ -56,14 +56,21 @@ class ToolBar(object):
                       'modified': True}
         filename = dialogs.open_sheet(self.parent)
         if filename is not None:
-            self.resources.add_resource('sheets', definition['name'],
-                                        definition, source_file=filename)
+            dia = dialogs.AddSheetDialog(None, -1, "Insert sheet details")
+            result = dia.ShowModal()
+            if result == wx.ID_OK:
+                self.settings = dia.GetSettings()
+                try:
+                    out = self.resources.add_resource(
+                        'sheets', self.settings['name'],
+                        {'colorkey': self.settings['colorkey'],
+                         'abs_path': filename})
+                except ValueError, e:
+                    wx.MessageBox(str(e), "Error",
+                                  wx.OK | wx.ICON_INFORMATION)
+            dia.Destroy()
+        return True
 
-        dlg = MyDialog()
-        res = dlg.ShowModal()
-        if res == wx.ID_OK:
-            print dlg.comboBox1.GetValue()
-        dlg.Destroy()
 
     def del_sheet(self, event):
         # LISTCTR with very large icons ?
@@ -97,7 +104,7 @@ class ToolBar(object):
 
     def add_costume(self, event):
         # dialog with definitions and a area selection on the sheet
-        dia = dialogs.AddResourceDialog(None, -1, "Add costume")
+        dia = dialogs.AddCostumeDialog(None, -1, "Add costume")
         result = dia.ShowModal()
         if result == wx.ID_OK:
             self.settings = dia.GetSettings()

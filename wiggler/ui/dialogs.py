@@ -62,6 +62,75 @@ class SelectCostume(wx.ListCtrl):
             self.InsertStringItem(num_items, sheetname)
 
 
+class AddSheetDialog(wx.Dialog):
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(270, 180))
+        self.settings = {}
+        self.resources = Resources()
+
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+
+        box1 = wx.BoxSizer(wx.HORIZONTAL)
+        box1.Add(wx.StaticText(self, 0, 'Define sheet name:'), 0,
+                     wx.ALL | wx.ALIGN_CENTER, 5)
+        self.name = wx.TextCtrl(self, 0, '')
+        box1.Add(self.name, -1, wx.RIGHT | wx.ALIGN_CENTER, 5)
+
+        box2 = wx.BoxSizer(wx.HORIZONTAL)
+        box2.Add(wx.StaticText(self, -1, 'Set colorkey:'), 0,
+                     wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        box3 = wx.GridSizer(1, 6, 0, 0)
+        box3.Add(wx.StaticText(self, -1, 'R:'), 0,
+                     wx.ALL | wx.ALIGN_RIGHT, 5)
+        self.rvalue = wx.SpinCtrl(self, -1, '0', size=wx.Size(48, -1),
+                                   min=0, max=255)
+        box3.Add(self.rvalue, 0, 0, 5)
+        box3.Add(wx.StaticText(self, -1, 'G:'), 0,
+                     wx.ALL | wx.ALIGN_RIGHT, 5)
+        self.gvalue = wx.SpinCtrl(self, -1, '0', size=wx.Size(48, -1),
+                                   min=0, max=255)
+        box3.Add(self.gvalue, 0, 0, 5)
+        box3.Add(wx.StaticText(self, -1, 'B:'), 0,
+                     wx.ALL | wx.ALIGN_RIGHT, 5)
+        self.bvalue = wx.SpinCtrl(self, -1, '0', size=wx.Size(48, -1),
+                                 min=0, max=255)
+        box3.Add(self.bvalue, 0, 0, 5)
+
+
+        box4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        box4.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        box4.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        boxglobal.Add(box1, 1, wx.EXPAND, 5)
+        boxglobal.Add(box2, 1, wx.EXPAND, 5)
+        boxglobal.Add(box3, 1, wx.EXPAND | wx.ALL, 5)
+        boxglobal.Add(box4, 1, wx.EXPAND, 5)
+        
+        self.SetSizer(boxglobal)
+        
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        self.settings['name'] = self.name.GetValue()
+        self.settings['colorkey'] = str(self.rvalue.GetValue()) + \
+            ',' + str(self.gvalue.GetValue()) + \
+            ',' + str(self.bvalue.GetValue())
+        if self.settings['name'] == '':
+            wx.MessageBox("Insert a name", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+
+
 class DelSheetDialog(wx.Dialog):
 
     def __init__(self, parent, id, title):
@@ -106,52 +175,7 @@ class DelSheetDialog(wx.Dialog):
         return self.settings
 
 
-class DelCostumeDialog(wx.Dialog):
-
-    def __init__(self, parent, id, title):
-        wx.Dialog.__init__(self, parent, id, title, size=(300, 300))
-        self.settings = {}
-        self.resources = Resources()
-
-        boxglobal = wx.BoxSizer(wx.VERTICAL)
-
-        boxup = wx.BoxSizer(wx.VERTICAL)
-        self.lc = SelectCostume(self, -1)
-        boxup.Add(wx.StaticText(self, 0, 'Select a costume to remove:'), 0,
-                  wx.ALL, 5)
-        boxup.Add(self.lc, 1, wx.ALL | wx.EXPAND, 5)
-
-        boxdown = wx.BoxSizer(wx.HORIZONTAL)
-        self.button_ok = wx.Button(self, 1, 'Ok')
-        self.button_cancel = wx.Button(self, 2, 'Cancel')
-        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
-        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
-        boxdown.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
-        boxdown.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
-
-        boxglobal.Add(boxup, 5, wx.EXPAND, 5)
-        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
-        self.SetSizer(boxglobal)
-
-    def onCancel(self, e):
-        self.EndModal(wx.ID_CANCEL)
-
-    def onOk(self, e):
-        sel = self.lc.GetNextSelected(-1)
-        if sel == -1:
-            wx.MessageBox("Select a costume", "Error",
-                          wx.OK | wx.ICON_INFORMATION)
-        else:
-            out = self.lc.GetItemText(sel, 0)
-            out2 = self.resources.costumes[out]
-            self.settings['costume'] = out2['name']
-            self.EndModal(wx.ID_OK)
-
-    def GetSettings(self):
-        return self.settings
-
-
-class AddResourceDialog(wx.Dialog):
+class AddCostumeDialog(wx.Dialog):
 
     def __init__(self, parent, id, title):
         wx.Dialog.__init__(self, parent, id, title, size=(300, 380))
@@ -239,6 +263,51 @@ class AddResourceDialog(wx.Dialog):
             out = self.lc.GetItemText(sel, 0)
             out2 = self.resources.sheets[out]
             self.settings['sheet'] = os.path.basename(out2['abs_path'])
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+
+
+class DelCostumeDialog(wx.Dialog):
+
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 300))
+        self.settings = {}
+        self.resources = Resources()
+
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+
+        boxup = wx.BoxSizer(wx.VERTICAL)
+        self.lc = SelectCostume(self, -1)
+        boxup.Add(wx.StaticText(self, 0, 'Select a costume to remove:'), 0,
+                  wx.ALL, 5)
+        boxup.Add(self.lc, 1, wx.ALL | wx.EXPAND, 5)
+
+        boxdown = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        boxdown.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        boxdown.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        boxglobal.Add(boxup, 5, wx.EXPAND, 5)
+        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
+        self.SetSizer(boxglobal)
+
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        sel = self.lc.GetNextSelected(-1)
+        if sel == -1:
+            wx.MessageBox("Select a costume", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            out = self.lc.GetItemText(sel, 0)
+            out2 = self.resources.costumes[out]
+            self.settings['costume'] = out2['name']
             self.EndModal(wx.ID_OK)
 
     def GetSettings(self):
