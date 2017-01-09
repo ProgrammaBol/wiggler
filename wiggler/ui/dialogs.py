@@ -40,9 +40,13 @@ def open_sheet(parent):
 
 class SelectSheet(wx.ListCtrl):
 
-    def __init__(self, parent, id):
-        wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
-                             wx.LC_SINGLE_SEL)
+    def __init__(self, parent, id, single_sel=True):
+        if single_sel is True:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
+                                 wx.LC_SINGLE_SEL)
+        else:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT)
+
         self.resources = Resources()
         self.InsertColumn(0, 'Sheet file', width=wx.LIST_AUTOSIZE_USEHEADER)
         for sheetname in self.resources.sheets.keys():
@@ -52,12 +56,49 @@ class SelectSheet(wx.ListCtrl):
 
 class SelectCostume(wx.ListCtrl):
 
-    def __init__(self, parent, id):
-        wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
-                             wx.LC_SINGLE_SEL)
+    def __init__(self, parent, id, single_sel=True):
+        if single_sel is True:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
+                                 wx.LC_SINGLE_SEL)
+        else:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT)
+
         self.resources = Resources()
         self.InsertColumn(0, 'Costume name', width=wx.LIST_AUTOSIZE_USEHEADER)
         for sheetname in self.resources.costumes.keys():
+            num_items = self.GetItemCount()
+            self.InsertStringItem(num_items, sheetname)
+
+
+class SelectSprite(wx.ListCtrl):
+
+    def __init__(self, parent, id, single_sel=True):
+        if single_sel is True:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
+                                 wx.LC_SINGLE_SEL)
+        else:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT)
+
+        self.resources = Resources()
+        self.InsertColumn(0, 'Sprite name', width=wx.LIST_AUTOSIZE_USEHEADER)
+        for sheetname in self.resources.sprites.keys():
+            num_items = self.GetItemCount()
+            self.InsertStringItem(num_items, sheetname)
+
+
+class SelectCharacter(wx.ListCtrl):
+
+    def __init__(self, parent, id, single_sel=True):
+        if single_sel is True:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT |
+                                 wx.LC_SINGLE_SEL)
+        else:
+            wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT)
+
+        self.resources = Resources()
+        self.InsertColumn(0, 'Character name',
+                          width=wx.LIST_AUTOSIZE_USEHEADER)
+        for sheetname in self.resources.characters.keys():
             num_items = self.GetItemCount()
             self.InsertStringItem(num_items, sheetname)
 
@@ -72,31 +113,30 @@ class AddSheetDialog(wx.Dialog):
 
         box1 = wx.BoxSizer(wx.HORIZONTAL)
         box1.Add(wx.StaticText(self, 0, 'Define sheet name:'), 0,
-                     wx.ALL | wx.ALIGN_CENTER, 5)
+                 wx.ALL | wx.ALIGN_CENTER, 5)
         self.name = wx.TextCtrl(self, 0, '')
         box1.Add(self.name, -1, wx.RIGHT | wx.ALIGN_CENTER, 5)
 
         box2 = wx.BoxSizer(wx.HORIZONTAL)
         box2.Add(wx.StaticText(self, -1, 'Set colorkey:'), 0,
-                     wx.ALL | wx.ALIGN_BOTTOM, 5)
+                 wx.ALL | wx.ALIGN_BOTTOM, 5)
 
         box3 = wx.GridSizer(1, 6, 0, 0)
         box3.Add(wx.StaticText(self, -1, 'R:'), 0,
-                     wx.ALL | wx.ALIGN_RIGHT, 5)
+                 wx.ALL | wx.ALIGN_RIGHT, 5)
         self.rvalue = wx.SpinCtrl(self, -1, '0', size=wx.Size(48, -1),
-                                   min=0, max=255)
+                                  min=0, max=255)
         box3.Add(self.rvalue, 0, 0, 5)
         box3.Add(wx.StaticText(self, -1, 'G:'), 0,
-                     wx.ALL | wx.ALIGN_RIGHT, 5)
+                 wx.ALL | wx.ALIGN_RIGHT, 5)
         self.gvalue = wx.SpinCtrl(self, -1, '0', size=wx.Size(48, -1),
-                                   min=0, max=255)
+                                  min=0, max=255)
         box3.Add(self.gvalue, 0, 0, 5)
         box3.Add(wx.StaticText(self, -1, 'B:'), 0,
-                     wx.ALL | wx.ALIGN_RIGHT, 5)
+                 wx.ALL | wx.ALIGN_RIGHT, 5)
         self.bvalue = wx.SpinCtrl(self, -1, '0', size=wx.Size(48, -1),
-                                 min=0, max=255)
+                                  min=0, max=255)
         box3.Add(self.bvalue, 0, 0, 5)
-
 
         box4 = wx.BoxSizer(wx.HORIZONTAL)
         self.button_ok = wx.Button(self, 1, 'Ok')
@@ -110,9 +150,9 @@ class AddSheetDialog(wx.Dialog):
         boxglobal.Add(box2, 1, wx.EXPAND, 5)
         boxglobal.Add(box3, 1, wx.EXPAND | wx.ALL, 5)
         boxglobal.Add(box4, 1, wx.EXPAND, 5)
-        
+
         self.SetSizer(boxglobal)
-        
+
     def onCancel(self, e):
         self.EndModal(wx.ID_CANCEL)
 
@@ -164,7 +204,7 @@ class DelSheetDialog(wx.Dialog):
     def onOk(self, e):
         sel = self.lc.GetNextSelected(-1)
         if sel == -1:
-            wx.MessageBox("Select a costume", "Error",
+            wx.MessageBox("Select a sheet", "Error",
                           wx.OK | wx.ICON_INFORMATION)
         else:
             out = self.lc.GetItemText(sel, 0)
@@ -308,6 +348,208 @@ class DelCostumeDialog(wx.Dialog):
             out = self.lc.GetItemText(sel, 0)
             out2 = self.resources.costumes[out]
             self.settings['costume'] = out2['name']
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+
+
+class AddSpriteDialog(wx.Dialog):
+
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 330))
+        self.settings = {}
+        self.resources = Resources()
+
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+
+        boxup = wx.BoxSizer(wx.VERTICAL)
+
+        self.lc = SelectCostume(self, -1, False)
+        boxup.Add(wx.StaticText(self, 0, 'Select costumes:'), 0,
+                  wx.ALL, 5)
+        boxup.Add(self.lc, 0, wx.ALL, 5)
+
+        boxdown = wx.BoxSizer(wx.VERTICAL)
+
+        boxdown1 = wx.BoxSizer(wx.HORIZONTAL)
+        boxdown1.Add(wx.StaticText(self, 0, 'Insert sprite name:'), 0,
+                     wx.ALL, 5)
+        self.name = wx.TextCtrl(self, 0, '')
+        boxdown1.Add(self.name, -1, wx.RIGHT, 5)
+
+        boxdown2 = wx.BoxSizer(wx.HORIZONTAL)
+        boxdown2.Add(wx.StaticText(self, 0, 'Insert base class name:'), 0,
+                     wx.ALL, 5)
+        self.classname = wx.TextCtrl(self, 0, '')
+        boxdown2.Add(self.classname, -1, wx.RIGHT, 5)
+
+        boxdown3 = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        boxdown3.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        boxdown3.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        boxdown.Add(boxdown1, 1, wx.EXPAND, 5)
+        boxdown.Add(boxdown2, 1, wx.EXPAND, 5)
+        boxdown.Add(boxdown3, 1, wx.EXPAND, 5)
+
+        boxglobal.Add(boxup, 1, wx.EXPAND, 5)
+        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
+        self.SetSizer(boxglobal)
+
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        self.settings['name'] = self.name.GetValue()
+        self.settings['base_class'] = self.classname.GetValue()
+        sel = self.lc.GetNextSelected(-1)
+        if self.settings['name'] == '' or \
+                self.settings['base_class'] == '' or \
+                sel == -1:
+            wx.MessageBox("Values must not be null", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            out = []
+            out.append(self.lc.GetItemText(sel, 0))
+            for i in range(0, self.lc.GetSelectedItemCount()-1):
+                print sel, out
+                sel = self.lc.GetNextSelected(sel)
+                out.append(self.lc.GetItemText(sel, 0))
+            self.settings['costumes'] = out
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+
+
+class DelSpriteDialog(wx.Dialog):
+
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 300))
+        self.settings = {}
+        self.resources = Resources()
+
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+
+        boxup = wx.BoxSizer(wx.VERTICAL)
+        self.lc = SelectSprite(self, -1)
+        boxup.Add(wx.StaticText(self, 0, 'Select a sprite to remove:'), 0,
+                  wx.ALL, 5)
+        boxup.Add(self.lc, 1, wx.ALL | wx.EXPAND, 5)
+
+        boxdown = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        boxdown.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        boxdown.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        boxglobal.Add(boxup, 5, wx.EXPAND, 5)
+        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
+        self.SetSizer(boxglobal)
+
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        sel = self.lc.GetNextSelected(-1)
+        if sel == -1:
+            wx.MessageBox("Select a sprite", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            out = self.lc.GetItemText(sel, 0)
+            self.settings['sprite'] = out
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+
+
+class AddCharacterDialog(wx.Dialog):
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 100))
+        self.settings = {}
+        self.resources = Resources()
+
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+
+        box1 = wx.BoxSizer(wx.HORIZONTAL)
+        box1.Add(wx.StaticText(self, 0, 'Define character name:'), 0,
+                 wx.ALL | wx.ALIGN_CENTER, 5)
+        self.name = wx.TextCtrl(self, 0, '')
+        box1.Add(self.name, -1, wx.RIGHT | wx.ALIGN_CENTER, 5)
+
+        box2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        box2.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        box2.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        boxglobal.Add(box1, 1, wx.EXPAND, 5)
+        boxglobal.Add(box2, 1, wx.EXPAND, 5)
+
+        self.SetSizer(boxglobal)
+
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        self.settings['name'] = self.name.GetValue()
+        if self.settings['name'] == '':
+            wx.MessageBox("Insert a name", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            self.EndModal(wx.ID_OK)
+
+    def GetSettings(self):
+        return self.settings
+
+
+class DelCharacterDialog(wx.Dialog):
+
+    def __init__(self, parent, id, title):
+        wx.Dialog.__init__(self, parent, id, title, size=(300, 300))
+        self.settings = {}
+        self.resources = Resources()
+
+        boxglobal = wx.BoxSizer(wx.VERTICAL)
+
+        boxup = wx.BoxSizer(wx.VERTICAL)
+        self.lc = SelectCharacter(self, -1)
+        boxup.Add(wx.StaticText(self, 0, 'Select a character to remove:'), 0,
+                  wx.ALL, 5)
+        boxup.Add(self.lc, 1, wx.ALL | wx.EXPAND, 5)
+
+        boxdown = wx.BoxSizer(wx.HORIZONTAL)
+        self.button_ok = wx.Button(self, 1, 'Ok')
+        self.button_cancel = wx.Button(self, 2, 'Cancel')
+        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
+        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
+        boxdown.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+        boxdown.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+
+        boxglobal.Add(boxup, 5, wx.EXPAND, 5)
+        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
+        self.SetSizer(boxglobal)
+
+    def onCancel(self, e):
+        self.EndModal(wx.ID_CANCEL)
+
+    def onOk(self, e):
+        sel = self.lc.GetNextSelected(-1)
+        if sel == -1:
+            wx.MessageBox("Select a character", "Error",
+                          wx.OK | wx.ICON_INFORMATION)
+        else:
+            out = self.lc.GetItemText(sel, 0)
+            self.settings['character'] = out
             self.EndModal(wx.ID_OK)
 
     def GetSettings(self):
