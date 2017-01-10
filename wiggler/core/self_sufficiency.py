@@ -51,7 +51,7 @@ class SelfSufficiency(object):
 
     def __init__(self, resources, initial_level=0):
         self.resources = resources
-        self.num_levels = 2
+        self.max_level = 1
         self.level = initial_level
         self.elements = [
             ('sprite', 'controller'),
@@ -72,6 +72,14 @@ class SelfSufficiency(object):
         self.templates = {}
         for element in self.elements[self.level]:
             self.templates[element] = {}
+
+    def increase_level(self):
+        if self.level < self.max_level:
+            self.level += 1
+
+    def decrease_level(self):
+        if self.level != 0:
+            self.level -= 1
 
     def set_default_level(self, level):
         self.level = level

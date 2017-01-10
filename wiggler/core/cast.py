@@ -8,12 +8,24 @@ class Cast(object):
         self.reload()
 
     def add_character(self, name, definition):
-        character = self.resources.new_resource('characters', name, definition)
+        character = self.resources.add_resource('characters', name, definition)
         self.characters[name] = character
         return character
 
+    def del_character(self, name):
+        del self.characters[name]
+        index = self.get_index(name)
+        del self.indexes[index]
+
     def set_index(self, name, index):
         self.indexes[index] = self.characters[name]
+
+    def get_index(self, name):
+        for index, character in self.indexes.items():
+            if character == self.characters[name]:
+                return index
+
+        return None
 
     def reload(self):
         self.characters = {}

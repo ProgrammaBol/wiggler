@@ -25,6 +25,7 @@ class CodePane(wx.Notebook):
             self.save_active_buffers()
             self.set_sprite_code_buffers(self.active_sprite)
         elif event.notice == 'actsprite':
+            self.save_active_buffers()
             self.set_sprite_code_buffers(event.data.sprite_builder)
         elif event.notice == 'preplay':
             self.save_active_buffers()
@@ -54,6 +55,8 @@ class CodePane(wx.Notebook):
         self.reload()
         buffers = \
             self.resources.selfsuff.get_buffers_list('sprite')
+        # TODO: add the possibilty to show all user_code, with
+        # the ones outside of selfsuff set as read-only
         for buffer_name in buffers:
             try:
                 buffer_text = sprite_builder.user_code[buffer_name]
