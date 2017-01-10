@@ -9,7 +9,6 @@ class Controller(object):
         self.status = "menu-init"
         self.resources = resources
         self.elements = Elements(self.resources)
-        self.sufficiency_level = 0
         self.update_user_code()
 
     def update_user_code(self):
@@ -21,7 +20,7 @@ class Controller(object):
             }
         self.code_handler = CodeHandler(
             self.resources, 'controller', 'custom_controller', self.user_code,
-            self.sufficiency_level, self.resources.controller_module)
+            self.resources.controller_module)
         # Make controller custom_update a bound method for class controller
         custom_module = self.code_handler.module.controller_custom_update
         self.custom_update = custom_module.__get__(self, self.__class__)

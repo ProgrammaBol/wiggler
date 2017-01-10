@@ -1,5 +1,7 @@
 import wx
 
+import wiggler.ui.dialogs as dialogs
+
 
 class ResourceManager(wx.Control):
 
@@ -21,33 +23,33 @@ class ResourceManager(wx.Control):
         if event.notice == 'change_background':
             self.change_background()
         elif event.notice == 'add_costume':
-            pass
+            self.add_costume()
         elif event.notice == 'del_costume':
-            pass
+            self.del_costume()
         elif event.notice == 'add_sheet':
-            pass
+            self.add_sheet()
         elif event.notice == 'del_sheet':
-            pass
+            self.del_sheet()
         elif event.notice == 'add_image':
             pass
         elif event.notice == 'del_image':
             pass
         elif event.notice == 'add_character':
-            pass
+            self.add_character()
         elif event.notice == 'del_character':
-            pass
+            self.del_character()
         elif event.notice == 'add_animation':
             pass
         elif event.notice == 'del_animation':
             pass
         elif event.notice == 'add_sprite':
-            pass
-        elif event.notice == 'remove_sprite':
-            pass
+            self.add_sprite()
+        elif event.notice == 'del_sprite':
+            self.del_sprite()
         event.Skip()
 
     def change_background(self):
-        dlg = ChangeBackgroundDialog(self.parent)
+        dlg = dialogs.ChangeBackgroundDialog(self.parent)
         res = dlg.ShowModal()
         if res == wx.ID_OK:
             back_type = dlg.back_type.GetValue()
@@ -55,45 +57,203 @@ class ResourceManager(wx.Control):
             self.resources.change_default_background(back_type, back_spec)
         dlg.Destroy()
 
+    def add_sheet(self):
+        # definition_fields = Factory_sheet.definition_fields
+        # dialog with definition fields, source file with browse button
+        # resource with same name , overwrite ?
+        filename = dialogs.open_sheet(self.parent)
+        if filename is not None:
+            dia = dialogs.AddSheetDialog(None, -1, "Insert sheet details",
+                                         self.resources)
+            result = dia.ShowModal()
+            if result == wx.ID_OK:
+                self.settings = dia.GetSettings()
+                try:
+                    self.resources.add_resource(
+                        'sheets', self.settings['name'],
+                        {'colorkey': self.settings['colorkey'],
+                         'abs_path': filename})
+                except ValueError as e:
+                    wx.MessageBox(str(e), "Error",
+                                  wx.OK | wx.ICON_INFORMATION)
+            dia.Destroy()
+        return True
 
-class ChangeBackgroundDialog(wx.Dialog):
+    def del_sheet(self):
+        # LISTCTR with very large icons ?
+        # use resources.find_deps
+        # print self.resources.find_deps('sheets', 'master')
+        # name = 'testsheet'
+        # self.resources.remove_resource('sheets', name)
+        # and everything associated to IT!!!
+        dia = dialogs.DelSheetDialog(None, -1, "Delete sheet",
+                                     self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            for x in self.resources.find_deps('sheets',
+                                              self.settings['sheet']):
+                for elem in x:
+                    try:
+                        self.resources.remove_resource(elem[0], elem[1])
+                    except Exception as e:
+                        wx.MessageBox(str(e), "Error", wx.OK |
+                                      wx.ICON_INFORMATION)
 
-    def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, wx.ID_ANY,
-                           "background", size=(300, 300))
+            try:
+                self.resources.remove_resource('sheets',
+                                               self.settings['sheet'])
+            except Exception as e:
+                wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
 
-        boxglobal = wx.BoxSizer(wx.VERTICAL)
-        boxdown = wx.BoxSizer(wx.VERTICAL)
+        dia.Destroy()
+        return True
 
-        boxdown1 = wx.BoxSizer(wx.HORIZONTAL)
-        boxdown1.Add(wx.StaticText(self, 0, 'Insert background type'), 0,
-                     wx.ALL, 5)
-        self.back_type = wx.TextCtrl(self, 0, '')
-        boxdown1.Add(self.back_type, -1, wx.Right, 5)
+    def add_costume(self):
+        # dialog with definitions and a area selection on the sheet
+        dia = dialogs.AddCostumeDialog(None, -1, "Add a new costume",
+                                       self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            # print self.settings['name'], self.settings['rect'], \
+            #    self.settings['sheet']
+            try:
+                self.resources.add_resource(
+                    'costumes', self.settings['name'],
+                    {'name': self.settings['name'],
+                     'sheet': self.settings['sheet'],
+                     'rect': self.settings['rect']})
+            except ValueError as e:
+                wx.MessageBox(str(e), "Error",
+                              wx.OK | wx.ICON_INFORMATION)
+        dia.Destroy()
+        return True
 
-        boxdown2 = wx.BoxSizer(wx.HORIZONTAL)
-        boxdown2.Add(wx.StaticText(self, 0, 'Insert background specs'), 0,
-                     wx.ALL, 5)
-        self.back_spec = wx.TextCtrl(self, 0, '')
-        boxdown2.Add(self.back_spec, -1, wx.Right, 5)
+    def del_costume(self):
+        # LISTCTRL with large icons
+        dia = dialogs.DelCostumeDialog(None, -1, "Delete costume",
+                                       self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            for x in self.resources.find_deps('costumes',
+                                              self.settings['costume']):
+                for elem in x:
+                    try:
+                        self.resources.remove_resource(elem[0], elem[1])
+                    except Exception as e:
+                        wx.MessageBox(str(e), "Error", wx.OK |
+                                      wx.ICON_INFORMATION)
 
-        boxdown4 = wx.BoxSizer(wx.HORIZONTAL)
-        self.button_ok = wx.Button(self, 1, 'Ok')
-        self.button_cancel = wx.Button(self, 2, 'Cancel')
-        self.button_ok.Bind(wx.EVT_BUTTON, self.onOk)
-        self.button_cancel.Bind(wx.EVT_BUTTON, self.onCancel)
-        boxdown4.Add(self.button_ok, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
-        boxdown4.Add(self.button_cancel, -1, wx.ALL | wx.ALIGN_BOTTOM, 5)
+            try:
+                self.resources.remove_resource('costumes',
+                                               self.settings['costume'])
+            except Exception as e:
+                wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
 
-        boxdown.Add(boxdown1, 1, wx.EXPAND, 5)
-        boxdown.Add(boxdown2, 1, wx.EXPAND, 5)
-        boxdown.Add(boxdown4, 1, wx.EXPAND, 5)
+        dia.Destroy()
+        return True
 
-        boxglobal.Add(boxdown, 1, wx.EXPAND, 5)
-        self.SetSizer(boxglobal)
+    def add_sprite(self):
+        # dialog with definition, select from existing costumes,
+        # animations, sounds...
+        # or add empty
+        dia = dialogs.AddSpriteDialog(None, -1, "Add a new sprite",
+                                      self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            try:
+                self.resources.add_resource('sprites', self.settings['name'],
+                                            {'name': self.settings['name'],
+                                             'base_class': self.settings
+                                             ['base_class'],
+                                             'costumes': self.settings
+                                             ['costumes'],
+                                             'animations': [],
+                                             'sounds': [],
+                                             'self_sufficiency': 0,
+                                             'user_code': {'__init__': ''}})
+            except ValueError as e:
+                wx.MessageBox(str(e), "Error",
+                              wx.OK | wx.ICON_INFORMATION)
 
-    def onOk(self, e):
-        self.EndModal(wx.ID_OK)
+        dia.Destroy()
+        return True
 
-    def onCancel(self, e):
-        self.EndModal(wx.ID_CANCEL)
+    def del_sprite(self):
+        # LISTCTRK with name + sprite definition
+        dia = dialogs.DelSpriteDialog(None, -1, "Delete a sprite",
+                                      self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            for x in self.resources.find_deps('sprites',
+                                              self.settings['sprite']):
+                for elem in x:
+                    try:
+                        self.resources.remove_resource(elem[0], elem[1])
+                    except Exception as e:
+                        wx.MessageBox(str(e), "Error", wx.OK |
+                                      wx.ICON_INFORMATION)
+
+            try:
+                self.resources.remove_resource('sprites',
+                                               self.settings['sprite'])
+            except Exception as e:
+                wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
+
+        dia.Destroy()
+        return True
+
+    def add_character(self):
+        # dialog with definition, select from existing sprites or add empty
+        dia = dialogs.AddCharacterDialog(None, -1, "Add a new character",
+                                         self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            try:
+                self.resources.add_resource('characters',
+                                            self.settings['name'],
+                                            {'sprites': []})
+            except ValueError as e:
+                wx.MessageBox(str(e), "Error",
+                              wx.OK | wx.ICON_INFORMATION)
+
+        dia.Destroy()
+        return True
+
+    def del_character(self):
+        # LISTCTRK with name + sprite definition
+        dia = dialogs.DelCharacterDialog(None, -1, "Delete character",
+                                         self.resources)
+        result = dia.ShowModal()
+        if result == wx.ID_OK:
+            self.settings = dia.GetSettings()
+            for x in self.resources.find_deps('characters',
+                                              self.settings['character']):
+                for elem in x:
+                    try:
+                        self.resources.remove_resource(elem[0], elem[1])
+                    except Exception as e:
+                        wx.MessageBox(str(e), "Error", wx.OK |
+                                      wx.ICON_INFORMATION)
+
+            try:
+                self.resources.remove_resource('characters',
+                                               self.settings['character'])
+            except Exception as e:
+                wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_INFORMATION)
+
+        dia.Destroy()
+        return True
+
+    def add_animation(self):
+        # dialog similar to add_costume but for every frame
+        pass
+
+    def del_animation(self):
+        # listctrl with animated gifs ?
+        pass

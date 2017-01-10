@@ -25,12 +25,14 @@ class Character(pygame.sprite.Group):
         self.builders[sprite_name] = sprite_builder
         if sprite_name not in self.definition['sprites']:
             self.definition['sprites'].append(sprite_name)
+            self.definition['modified'] = True
 
     def remove_sprite(self, sprite_name):
         self.builders_list.remove(sprite_name)
-        del(self.biulders[sprite_name])
+        del(self.builders[sprite_name])
         self.active_sprite = 0
         self.definition['sprites'].remove(sprite_name)
+        self.definition['modified'] = True
 
     def set_active_sprite(self, spriteindex):
         if spriteindex is not None:

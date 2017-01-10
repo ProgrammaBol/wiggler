@@ -6,7 +6,6 @@ def_fields = {
     'costumes': {},
     'animations': {},
     'sounds': {},
-    'sufficiency_level': {},
     'user_code': {},
 }
 
@@ -21,47 +20,38 @@ class SpriteBuilder(object):
         self.costumes = CostumesSet(resources, definition['costumes'])
         self.animations = AnimationsSet(resources, definition['animations'])
         self.sounds = SoundsSet(resources, definition['sounds'])
-        self.sufficiency_level = definition['self_sufficiency']
         self.user_code = definition['user_code']
         self.init_data = definition.get('init_data', {})
-        additional_initdata = {
-            'costumes_set': self.costumes,
-            'animations_set': self.animations,
-            'sounds_set': self.sounds,
-        }
-        self.init_data.update(additional_initdata)
         self.module_filename = params['module_file']
         self.code_handler = CodeHandler(
             self.resources, 'sprite', self.name, self.user_code,
-            self.sufficiency_level, self.module_filename)
+            self.module_filename)
         self.events = params['events']
 
     def add_costume(self, costume_name):
         self.costumes.add(costume_name)
         if costume_name not in self.definition['costumes']:
             self.definition['costumes'].append(costume_name)
+            self.definition['modified'] = True
 
     def del_costume(self, costume_name):
         self.costumes.remove(costume_name)
         self.definition['costumes'].remove(costume_name)
+        self.definition['modified'] = True
 
     def update_user_code(self, user_code):
         self.definition['user_code'] = user_code
         self.user_code = user_code
         self.code_handler.update_user_code(self.user_code)
 
-    def decrease_sufficiency(self):
-        if self.sufficiency_level > 1:
-            self.sufficiency_level -= 1
-            self.code_handler.decrease_sufficiency()
-
-    def increase_sufficiency(self):
-        if self.sufficiency_level < 10:
-            self.sufficiency_level += 1
-            self.code_handler.increase_sufficiency()
-
     def build(self):
         sprite = None
+        extra_init_data = {
+            'costumes_set': self.costumes,
+            'animations_set': self.animations,
+            'sounds_set': self.sounds,
+        }
+        self.init_data.update(extra_init_data)
         if self.code_handler.module is not None:
             sprite = self.code_handler.module.Sprite(
                 self.resources, self.events, self.init_data)

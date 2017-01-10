@@ -97,7 +97,7 @@ class CodeSection(object):
 class CodeHandler(object):
 
     def __init__(self, resources, element, module_name, user_code,
-                 sufficiency_level, module_filename):
+                 module_filename):
         self.module_name = module_name
         self.element = element
         self.resources = resources
@@ -107,7 +107,6 @@ class CodeHandler(object):
         self.user_code = user_code
         self.compile_error = False
         self.template = None
-        self.sufficiency_level = sufficiency_level
         self.set_template()
         self.module = None
         self.traceback_message = None
@@ -123,16 +122,6 @@ class CodeHandler(object):
     def update_user_code(self, user_code):
         self.user_code = user_code
         self.generate()
-
-    def decrease_sufficiency(self):
-        if self.sufficiency.level > 1:
-            self.sufficiency.level -= 1
-        self.set_template()
-
-    def increase_sufficiency(self):
-        if self.sufficiency.level < 10:
-            self.sufficiency.level += 1
-        self.set_template()
 
     def find_section_line(self, line):
         for name, section in self.sections.items():

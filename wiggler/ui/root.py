@@ -4,6 +4,7 @@ import wx.py
 import wiggler.ui.dialogs as dialogs
 
 from wiggler.ui.characterspane import CharactersPane
+from wiggler.ui.costumespane import CostumesPane
 from wiggler.ui.code_pane import CodePane
 from wiggler.ui.menubar import MenuBar
 from wiggler.ui.resources import ResourceManager
@@ -34,6 +35,8 @@ class RootWindow(wx.Frame):
 
         self.code_pane = CodePane(self, self.resources, self.events)
         self.characters_pane = CharactersPane(
+            self, self.resources, self.events)
+        self.costumes_pane = CostumesPane(
             self, self.resources, self.events)
         self.sprites_pane = SpritesPane(self, self.resources, self.events)
         self.traceback = TracebackPane(self, self.resources, self.events)
@@ -74,25 +77,26 @@ class RootWindow(wx.Frame):
     def widget_placement(self):
         sizer = wx.GridBagSizer(hgap=1, vgap=1)
         sizer.Add(self.stage_pane, (0, 0))
-        sizer.Add(self.basket_classes, (0, 1), span=(1, 1))
+        sizer.Add(self.basket_classes, (0, 1), span=(1, 1), flag=wx.EXPAND)
         sizer.Add(self.basket_functions, (1, 1), span=(1, 1), flag=wx.EXPAND)
-        sizer.Add(self.code_pane, (0, 2), span=(2, 1), flag=wx.EXPAND)
+        sizer.Add(self.costumes_pane, (0, 2), span=(2, 1), flag=wx.EXPAND)
+        sizer.Add(self.code_pane, (0, 3), span=(2, 1), flag=wx.EXPAND)
         sizer.Add(self.characters_pane, (1, 0), flag=wx.EXPAND)
-        sizer.Add(self.traceback, (2, 0), span=(1, 3), flag=wx.EXPAND)
+        sizer.Add(self.traceback, (2, 0), span=(1, 4), flag=wx.EXPAND)
         sizer.Fit(self)
-        sizer.AddGrowableCol(2)
+        sizer.AddGrowableCol(3)
         sizer.AddGrowableRow(2)
         self.SetSizer(sizer)
 
     def setup_basket_members(self):
         self.basket_functions = wx.ListCtrl(
-            self, wx.ID_ANY, size=(200, 400), style=wx.LC_REPORT)
+            self, wx.ID_ANY, style=wx.LC_REPORT)
         self.basket_functions.InsertColumn(0, "Available attributes",
                                            width=wx.LIST_AUTOSIZE_USEHEADER)
 
     def setup_basket_classes(self):
         self.basket_classes = wx.ListCtrl(
-            self, wx.ID_ANY, size=(200, 400), style=wx.LC_REPORT)
+            self, wx.ID_ANY, style=wx.LC_REPORT)
         self.basket_classes.InsertColumn(0, "Available Classes",
                                          width=wx.LIST_AUTOSIZE_USEHEADER)
         self.basket_classes.InsertStringItem(0, "MovingSprite")

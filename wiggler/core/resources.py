@@ -238,6 +238,7 @@ class Resources(object):
             definition['abs_path'] = res_dir + name + ext
             definition['file'] = name + ext
             shutil.copy(source_file, definition['abs_path'])
+        definition['modfied'] = True
         res_dict[name] = definition
 
         self.save_resources(resource_type, name=name, save_all=False)
@@ -372,6 +373,22 @@ class Resources(object):
                 definition['name'] = name
 
         return definition
+
+    def clone_resource(self, resource_type, name, clone_name):
+        definition = getattr(self, resource_type)[name]
+        if resource_type == 'characters':
+            new_sprite_def = []
+            for sprite_name in definition['sprites']:
+                new_name = sprite_name + '-1'
+                new_sprite_def.append(new_name)
+                self.clone_resource('sprites', sprite_name, new_name)
+            definition['sprites'] = new_sprite_def
+
+        clone_def = copy.copy(definition)
+        clone_source_file = clone_def.pop('abs_path', None)
+        self.add_resource(resource_type, clone_name, clone_def,
+                          source_file=clone_source_file)
+        return clone_def
 
     def load_resource(self, resource_type, resource_name):
         module_dir = self.module_dirs[resource_type]

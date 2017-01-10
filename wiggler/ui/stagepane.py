@@ -93,7 +93,7 @@ class StagePane(wx.Control):
         # if self.code_status == "undef":
         #  self.events.send('play')
         # else:
-        #     # TODO(panda): warn about errors in the code
+        # TODO(panda): warn about errors in the code
         #     pass
         self.stage.pause = False
         self.stage.reset()
