@@ -1,0 +1,21 @@
+---
+file: basic.j2
+name: basic
+element: sprite
+level: 0
+---
+file: intermediate.j2
+name: intermediate
+element: sprite
+level: 1
+---
+file: basic_controller.j2
+name: basic_controller
+element: controller
+level: 0
+---
+file: intermediate_controller.j2
+name: intermediate_controller
+element: controller
+level: 1
+...

@@ -1,0 +1,6 @@
+name: "test project"
+controller_user_code:
+    custom_update: print 'a'
+background:
+    type: image
+    image_name: 'stars'
