@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='wiggler',
-    version='0.1',
+    version='1.0.a1',
     description=("A Python IDE that uses PyGame, wxPython and jinja2 to"
                  "bring Scratch-like features to Python"),
     long_description=("A Python module that uses PyGame, wxPython and"
