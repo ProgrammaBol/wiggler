@@ -1,0 +1,7 @@
+# By default, a sound with name: filename source: filename.extension will be created
+# you can override setting in here
+---
+file: thrust.wav
+name: thrust
+loop: true
+

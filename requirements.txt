@@ -1,0 +1,4 @@
+wx
+jinja2
+pygame
+pyyaml
